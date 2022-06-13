@@ -105,51 +105,11 @@ add Bootstrap css styles (`angular.json`):
 }
 ```
 
-<br><br>
-
-<hr>
-
-<br><br>
-
-## **Section 02: The basics** <a href="#nav">&#8593;</a> <span id="top02"></span>
-
-<br><br>
-
-1. <a href="#a0200">How an Angular App gets Loaded and Started</a>
-2. <a href="#a0201">Components are Important!</a>
-3. <a href="#a0202">Creating a New Component</a>
-4. <a href="#a0203">Understanding the Role of AppModule and Component Declaration</a>
-5. <a href="#a0204">Creating Components with the CLI & Nesting Components</a>
-6. <a href="#a0205">Working with Component Templates</a>
-7. <a href="#a0206">Working with Component Styles</a>
-8. <a href="#a0207">Fully Understanding the Component Selector</a>
-9. <a href="#a0208">What is Databinding?</a>
-10. <a href="#a0209">String Interpolation</a>
-11. <a href="#a0210">Property Binding</a>
-12. <a href="#a0211">Property Binding vs String Interpolation</a>
-13. <a href="#a0212">Event Binding</a>
-14. <a href="#a0213">Passing and Using Data with Event Binding</a>
-15. <a href="#a0214">Two-Way-Databinding</a>
-16. <a href="#a0215">Combining all Forms of Databinding</a>
-17. <a href="#a0216">.</a>
-18. <a href="#a0217">.</a>
-19. <a href="#a0218">.</a>
-20. <a href="#a0219">.</a>
-21. <a href="#a0220">.</a>
-22. <a href="#a0221">.</a>
-23. <a href="#a0222">.</a>
-
-<br><br>
-
-### **How an Angular App gets Loaded and Started** <span id="a0200"></span><a href="#top02">&#8593;</a>
-
-<br>
-
 `Index.html` file contains `script` files which are being executed, which starts the Angular app.
 
 <br>
 
-In the `app.module.ts` file, in the `bootstrap` array you tell Angular which components it should bootstrap.
+In the `app.module.ts` file, in the `bootstrap` array you specify the bootstrapping (root) component.
 
 <br><br>
 
@@ -173,7 +133,7 @@ We start with the app.component - the root component which holds our entire appl
 
 <br>
 
-Component is simply a TypeScript class, so that Angular is able to instantiate it to create objects based on the blueprint we set up.
+Component is simply a TypeScript class, then Angular is able to instantiate it to create objects based on the blueprint we set up.
 
 <br>
 
@@ -208,7 +168,7 @@ Now to use our new component, we need to add something in the `app.module.ts`.
 - Angular Module file (`app.module.ts`) is decorated by a `@NgModule` decorator which is imported from `'@angular/core'`
   - When you create a new component, you have to register it in app.module.ts, in the `@NgModule`.
     - In Angular Module we have 4 properties:
-      - `declarations`: (here you register new components, basides declaring, you also have to `import` a component)
+      - `declarations`: (here you register new components, besides declaring, you also have to `import` a component)
       - `imports`: (allows us to add other modules to this module)
       - `providers`: (services)
       - `bootstrap`: (declare the bootstrapping component (root component))
@@ -230,8 +190,8 @@ Creating a new component which is nested into another component:
   - it will generate 4 files:
     - component class file
     - component template file
-    - component css file
-    - component file for testing (`.spec.ts`)
+    - component styling (CSS/SCSS/SASS etc.) file
+    - component testing file (`.spec.ts`)
 - make sure the new component has been added to `app.module.ts` in the declarations array.
 - you can nest components into each other, e.g. `servers` component having the `server` component (selector) inside of its template.
 - you can replicate components by simply using them multiple times (using their selectors).
@@ -242,7 +202,7 @@ Creating a new component which is nested into another component:
 
 <br>
 
-Instead of using external template (html file), you can also use inline template - you define html code in the TypeScript code.
+Instead of using external template (html file), you can also use inline template - you define html code in the TypeScript code (as a value of `template` property).
 
 <br>
 
@@ -270,9 +230,9 @@ It is okay to use this approach when you have not so much code in your template,
 
 <br>
 
-- To define styling for a component, go to (any component, here root component) the app.`component.css` file
+- To define styling for a component, go to (any component, here root component) the app.`component.ts` (class) file (css: app.`component.css`)
 - Here you can point to external stylesheets:
-  - `styleUrls: ['./servers.component.css', './another.css']`,
+  - `styleUrls: ['./app.component.css', './another.css']`,
 - You can also use inline styling - in the class file - app.`component.ts`:
 
 ```ts
@@ -328,7 +288,7 @@ selector: ".app-servers";
 <div class="app-servers"></div>
 ```
 
-- Selecting by `id` or `pseudo-selectors` (`:hover`) won't work.
+- Selecting by `id` or `pseudo-selectors` (e.g. `:hover`) won't work.
 
 <br><br>
 
@@ -348,7 +308,7 @@ There are different ways of communication, for example:
 
 #### **Output Data (Typescript Code -> Template (HTML))**
 
-We want to **Output Data** from our TypeScript code in the HTML code (template),
+We want to **Output Data** from our TypeScript code to the HTML code (template),
 we then can use:
 
 - **String Interpolation** ( `{{ data }}` )
@@ -586,7 +546,7 @@ export class ServersComponent implements OnInit {
 
 With that we're using all four ways of `Databinding` together with each other:
 
-- `Event Binding` ( `(click)="onCreateServer()"` ) to then listen to a click event,
+- `Event Binding` ( `(click)="onCreateServer()"` ) to listen to a click event,
 - `String Interpolation` ( `<p>{{ serverCreationStatus }}</p>` ) to output the data here,
 - `Property Binding` to enable the button ( `[disabled]="!allowNewServer"` ) after 2 seconds,
 - and Two-Way-Binding ( `[(ngModel)]="serverName"` ) to fetch our data.
@@ -601,5 +561,294 @@ The assignment 2 code:
 <button [disabled]="!userName" (click)="onReset()">Reset</button>
 <!-- <button [disabled]="userName === ''" (click)="userName = ''">Reset</button> -->
 ```
+
+<br><br>
+
+### **Understanding Directives** <span id="a0216"></span><a href="#top02">&#8593;</a>
+
+<br>
+
+Directives are Instructions in the DOM. Components are kind of such instructions in the DOM, when we place the selector of our component, at this point of time we're instructing Angular to add the content of our component template and ts code (business logic) in this place where we use the selector.
+
+<br>
+
+Components are directives with a template. There are also directives without a template:
+
+<br>
+
+An example would be the `appTurnGreen` directive: `<p appTurnGreen>Receives a green background!</p>`, which would be a custom directive we could build. We typically add directives with attribute selector, but technically the selector of the directive can be configured just like the selector of a component (e.g. tag, class, attribute).
+
+<br>
+
+So then Angular would find this instruction, and apply it to the element that has this selector:
+
+```ts
+@Directive({
+  selector: "[appTurnGreen]",
+})
+export class TurnGreenDirective {
+  // ...logic here...
+}
+```
+
+<br><br><br>
+
+### **Using ngIf to Output Data Conditionally & Enhancing ngIf with an Else Condition** <span id="a0217"></span><a href="#top02">&#8593;</a>
+
+<br>
+
+#### **Using ngIf to Output Data Conditionally (1)**
+
+<br>
+
+The `*ngIf` directive is displaying an element conditionally.
+
+<br>
+
+The `*ngIf` directive is a structural directive - it changes the structure of our DOM, it either adds an element or it doesn't add it.
+
+<br>
+
+The `*ngIf` directive:
+
+```html
+<p *ngIf="serverCreated">Server was created, server name is {{ serverName }}</p>
+```
+
+```ts
+// ...
+serverCreated = false;
+
+// ...
+
+onCreateServer() {
+    this.serverCreated = true;
+}
+```
+
+Keep in mind that between the quotation marks you could also do a method call or place a TypeScript expression, anything which returns `true` or `false`.
+
+<br>
+
+Note: Remember that `*ngIf` directive is either adding or removing elements conditionally in the DOM, it doesn't hide them or something, the element is just not there.
+
+<br><br>
+
+#### **Enhancing ngIf with an Else Condition**
+
+<br>
+
+```html
+<p *ngIf="serverCreated; else noServer">
+  Server was created, server name is {{ serverName }}
+</p>
+<ng-template #noServer>
+  <p>No server was created!</p>
+</ng-template>
+```
+
+`<ng-template>` is a component/directive shipped with Angular which you can use to mark places in the DOM.
+
+<br>
+
+`#noServer` - a local reference, a "marker" - with which you mark a certain spot in the template which we want to show conditionally
+
+<br>
+
+`*ngIf="serverCreated; else noServer"` - a `*ngIf` directive with else statement.
+
+<br><br><br>
+
+### **Styling Elements Dynamically with ngStyle & Applying CSS Classes Dynamically with ngClass** <span id="a0218"></span><a href="#top02">&#8593;</a>
+
+<br><br>
+
+#### **Styling Elements Dynamically with ngStyle**
+
+<br>
+
+Another type of directives - `attribute directives`. Attribute directives don't add or remove elements, they only change the element they were placed on.
+
+<br>
+
+Here we are using `attribute directives` with `property binding`:
+
+<br>
+
+```html
+<p [ngStyle]="{}">{{ data }}</p>
+```
+
+Note: The square brackets are not part of the directive name, the directive name is just `ngStyle`. The square brackets indicate that we want to bind to some property on this directive and this property name happens to also be `ngStyle`.
+
+<br>
+
+The `ngStyle` property expects to get a JavaScript Object, and here you can find the key/value pairs of the `style` name as a key and the value of a `style` as a value.
+
+<br>
+
+There are two ways of notations:
+
+```html
+<p [ngStyle]="{ 'background-color': 'red' }">{{ data }}</p>
+```
+
+or
+
+```html
+<p [ngStyle]="{ backgroundColor: 'red' }">{{ data }}</p>
+```
+
+You could also call a method here:
+
+```html
+<p [ngStyle]="{ backgroundColor: getColor() }">{{ data }}</p>
+```
+
+```ts
+getColor() {
+  return this.serverStatus === 'online' ? 'green' : 'red';
+}
+```
+
+<br>
+
+Note: Remember that between the quotation marks you can write TypeScript code/expression!
+
+<br><br>
+
+#### **Applying CSS Classes Dynamically with ngClass**
+
+<br>
+
+`ngClass` directive allows us to dynamically add or remove `CSS classes`
+
+<br>
+
+In this case the `directive` also accepts a JavaScript Object, and we also have `key`/`value` pairs. Here the key is the `CSS class` name and the `value` is the conditions determining whether this class should be attached or not.
+
+<br>
+
+As with `ngStyle`, there are two ways of notation: a `'dashed-string'` or a `camelCased` key with `'string'` value.
+
+<br>
+
+```html
+<p
+  [ngStyle]="{ backgroundColor: getColor() }"
+  [ngClass]="{ online: serverStatus === 'online' }"
+>
+  {{ "Server" }} with ID {{ serverId }} is {{ getServerStatus() }}
+</p>
+```
+
+<br><br>
+
+### **Outputting Lists with ngFor** <span id="a0219"></span><a href="#top02">&#8593;</a>
+
+<br>
+
+`*ngFor` is a structural directive (changing the DOM itself)
+
+<br>
+
+```ts
+// ...
+// Create an Array of servers
+servers = ['TestServer', 'TestServer 2'];
+
+// ...
+
+onCreateServer() {
+  this.serverCreated = true;
+  // push a new server on event call (click)
+  this.servers.push(this.serverName);
+}
+// ...
+```
+
+<br>
+
+```html
+<app-server *ngFor="let server of servers"></app-server>
+```
+
+The syntax: a temporary variable (`let variableName`), then `of` `property` - property we defined in the TypeScript file.
+
+<br>
+
+This will now loop through all the elements of this array and assign individual to this dynamic (`server`) variable. Just like JavaScript `for of` loop.
+
+<br><br>
+
+#### Assignment-3 Code:
+
+```html
+<div>
+  <!--<button class="btn btn-primary" (click)="showSecret = !showSecret">Display Details</button>-->
+  <button (click)="toggle()">Display Details</button>
+  <p *ngIf="showSecret">Secret Password = thunderStorm</p>
+  <div
+    *ngFor="let logItem of log"
+    [ngStyle]="{ backgroundColor: logItem >= 5 ? 'blue' : 'transparent' }"
+    [ngClass]="{ whiteColor: logItem >= 5 }"
+  >
+    {{ logItem }}
+  </div>
+</div>
+```
+
+```ts
+export class DisplayComponent implements OnInit {
+  showSecret: boolean = false;
+
+  clicks: number = 0;
+  log: Array<number> = [];
+
+  constructor() {}
+
+  ngOnInit(): void {}
+
+  toggle() {
+    this.showSecret = !this.showSecret;
+
+    this.log.push(this.log.length + 1);
+  }
+}
+```
+
+<br><br>
+
+### **Getting the Index when using ngFor** <span id="a0220"></span><a href="#top02">&#8593;</a>
+
+<br>
+
+To get the index inside of `ngFor` directive, create a new variable after let..of: `let variableName = index`, e.g.:
+
+```html
+<div *ngFor="let logItem of log; let i = index">{{ logItem }}</div>
+```
+
+<br>
+
+More code:
+
+```html
+<div>
+  <button (click)="toggle()">Display Details</button>
+  <p *ngIf="showSecret">Secret Password = thunderStorm</p>
+  <div
+    *ngFor="let logItem of log; let i = index"
+    [ngStyle]="{ backgroundColor: i >= 4 ? 'blue' : 'transparent' }"
+    [ngClass]="{ whiteColor: i >= 4 }"
+  >
+    {{ logItem }}
+  </div>
+</div>
+```
+
+<br><br>
+
+<hr>
 
 <br><br>

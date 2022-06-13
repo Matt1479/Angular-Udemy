@@ -1,0 +1,11 @@
+<div>
+  <button (click)="toggle()">Display Details</button>
+  <p *ngIf="showSecret">Secret Password = thunderStorm</p>
+  <div
+    *ngFor="let logItem of log; let i = index"
+    [ngStyle]="{ backgroundColor: i >= 4 ? 'blue' : 'transparent' }"
+    [ngClass]="{ whiteColor: i >= 4 }"
+  >
+    {{ logItem }}
+  </div>
+</div>
