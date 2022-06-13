@@ -595,9 +595,9 @@ With that we're using all four ways of `Databinding` together with each other:
 - `Property Binding` to enable the button ( `[disabled]="!allowNewServer"` ) after 2 seconds,
 - and Two-Way-Binding ( `[(ngModel)]="serverName"` ) to fetch our data.
 
-<br>
+<br><br>
 
-The assignment 2 code:
+Assignment 2 code:
 
 ```html
 <input type="text" [(ngModel)]="userName" />
@@ -631,7 +631,7 @@ So then Angular would find this instruction, and apply it to the element that ha
   selector: "[appTurnGreen]",
 })
 export class TurnGreenDirective {
-  // ...logic here...
+  // ...logic
 }
 ```
 
@@ -641,7 +641,7 @@ export class TurnGreenDirective {
 
 <br>
 
-#### **Using ngIf to Output Data Conditionally (1)**
+> #### **Using ngIf to Output Data Conditionally**
 
 <br>
 
@@ -678,7 +678,7 @@ Note: Remember that `*ngIf` directive is either adding or removing elements cond
 
 <br><br>
 
-#### **Enhancing ngIf with an Else Condition**
+> #### **Enhancing ngIf with an Else Condition**
 
 <br>
 
@@ -707,11 +707,11 @@ Note: Remember that `*ngIf` directive is either adding or removing elements cond
 
 <br><br>
 
-#### **Styling Elements Dynamically with ngStyle**
+> #### **Styling Elements Dynamically with ngStyle**
 
 <br>
 
-Another type of directives - `attribute directives`. Attribute directives don't add or remove elements, they only change the element they were placed on.
+A different kind of directives - the `attribute directives`. Attribute directives don't add or remove elements, they only change the element they were placed on.
 
 <br>
 
@@ -727,23 +727,27 @@ Note: The square brackets are not part of the directive name, the directive name
 
 <br>
 
-The `ngStyle` property expects to get a JavaScript Object, and here you can find the key/value pairs of the `style` name as a key and the value of a `style` as a value.
+The `ngStyle` property expects to get a JavaScript Object, and here you can find the key/value pairs of the `style`. The `style` key is the name of a `style` and the value is the value of a `style` (e.g. `{ 'background-color': 'white' }`)
 
 <br>
 
-There are two ways of notations:
+There are two notations:
+
+- `'string-dashed-key': 'value'`:
 
 ```html
 <p [ngStyle]="{ 'background-color': 'red' }">{{ data }}</p>
 ```
 
-or
+- `camelCasedKey: 'value'`:
 
 ```html
 <p [ngStyle]="{ backgroundColor: 'red' }">{{ data }}</p>
 ```
 
-You could also call a method here:
+<br>
+
+You could also call a method in the place of `value`:
 
 ```html
 <p [ngStyle]="{ backgroundColor: getColor() }">{{ data }}</p>
@@ -757,11 +761,11 @@ getColor() {
 
 <br>
 
-Note: Remember that between the quotation marks you can write TypeScript code/expression!
+Note: Remember that between the quotation marks you can write TypeScript code/expression (e.g. `[ngStyle]="{ backgroundColor: x > 5 ? 'blue' : 'white' }"`)
 
 <br><br>
 
-#### **Applying CSS Classes Dynamically with ngClass**
+> #### **Applying CSS Classes Dynamically with ngClass**
 
 <br>
 
@@ -821,7 +825,7 @@ The syntax: a temporary variable (`let variableName`), then `of` `property` - pr
 
 <br>
 
-This will now loop through all the elements of this array and assign individual to this dynamic (`server`) variable. Just like JavaScript `for of` loop.
+This will now loop through all the elements of this array and assign individual value to this dynamic (`server`) variable. Just like JavaScript for..of loop.
 
 <br><br>
 
@@ -846,7 +850,6 @@ This will now loop through all the elements of this array and assign individual 
 export class DisplayComponent implements OnInit {
   showSecret: boolean = false;
 
-  clicks: number = 0;
   log: Array<number> = [];
 
   constructor() {}
@@ -896,3 +899,26 @@ More code:
 <hr>
 
 <br><br>
+
+## **Section 03: The Course Project - The Basics** <a href="#nav">&#8593;</a> <span id="top03"></span>
+
+<br><br>
+
+1. <a href="#a0300">aaa</a>
+2. <a href="#a0301">aaa</a>
+3. <a href="#a0302">aaa</a>
+4. <a href="#a0303">aaa</a>
+5. <a href="#a0304">aaa</a>
+6. <a href="#a0305">aaa</a>
+7. <a href="#a0306">aaa</a>
+8. <a href="#a0307">aaa</a>
+9. <a href="#a0308">aaa</a>
+10. <a href="#a0309">aaa</a>
+
+<br><br>
+
+### **aaa** <span id="a0300"></span><a href="#top03">&#8593;</a>
+
+<br>
+
+Soon

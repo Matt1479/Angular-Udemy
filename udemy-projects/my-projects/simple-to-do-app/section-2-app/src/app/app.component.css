@@ -1,0 +1,32 @@
+* {
+  font-size: 14px;
+}
+
+.card {
+  margin: 2rem;
+  padding: 1rem;
+}
+
+.b {
+  margin: 5px;
+}
+
+.title {
+  text-align: center;
+  font-size: 2rem;
+}
+
+.content {
+  font-size: 1.55rem;
+}
+
+.success {
+  background-color: #d4eddb;
+}
+
+.header {
+  font-weight: 700;
+  font-size: 3rem;
+  text-align: center;
+  border: 1px dashed gray;
+}
