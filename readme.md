@@ -67,6 +67,50 @@ imports: [BrowserModule, FormsModule];
 
 <br><br>
 
+<hr>
+
+<br><br>
+
+## **Section 02: The basics** <a href="#nav">&#8593;</a> <span id="top02"></span>
+
+<br><br>
+
+1. <a href="#a0200">How an Angular App gets Loaded and Started</a>
+2. <a href="#a0201">Components are Important!</a>
+3. <a href="#a0202">Creating a New Component</a>
+4. <a href="#a0203">Understanding the Role of AppModule and Component Declaration</a>
+5. <a href="#a0204">Creating Components with the CLI & Nesting Components</a>
+6. <a href="#a0205">Working with Component Templates</a>
+7. <a href="#a0206">Working with Component Styles</a>
+8. <a href="#a0207">Fully Understanding the Component Selector</a>
+9. <a href="#a0208">What is Databinding?</a>
+10. <a href="#a0209">String Interpolation</a>
+11. <a href="#a0210">Property Binding</a>
+12. <a href="#a0211">Property Binding vs String Interpolation</a>
+13. <a href="#a0212">Event Binding</a>
+14. <a href="#a0213">Passing and Using Data with Event Binding</a>
+15. <a href="#a0214">Two-Way-Databinding</a>
+16. <a href="#a0215">Combining all Forms of Databinding</a>
+17. <a href="#a0216">Understanding Directives</a>
+18. <a href="#a0217">Using ngIf to Output Data Conditionally & Enhancing ngIf with an Else Condition</a>
+19. <a href="#a0218">Styling Elements Dynamically with ngStyle & Applying CSS Classes Dynamically with ngClass</a>
+20. <a href="#a0219">Outputting Lists with ngFor</a>
+21. <a href="#a0220">Getting the Index when using ngFor</a>
+
+<br><br>
+
+### **How an Angular App gets Loaded and Started** <span id="a0200"></span><a href="#top02">&#8593;</a>
+
+<br>
+
+`Index.html` file contains `script` files which are being executed, which starts the Angular app.
+
+<br>
+
+In the `app.module.ts` file, in the `bootstrap` array you tell Angular which components it should bootstrap.
+
+<br><br>
+
 ### **The Course Structure** <span id="a0102"></span><a href="#top01">&#8593;</a>
 
 - Getting Started
