@@ -107,7 +107,7 @@ imports: [BrowserModule, FormsModule];
 
 <br>
 
-In the `app.module.ts` file, in the `bootstrap` array you tell Angular which components it should bootstrap.
+In the `app.module.ts` file, in the `bootstrap` array you specify the bootstrapping (root) component.
 
 <br><br>
 
@@ -149,12 +149,6 @@ add Bootstrap css styles (`angular.json`):
 }
 ```
 
-`Index.html` file contains `script` files which are being executed, which starts the Angular app.
-
-<br>
-
-In the `app.module.ts` file, in the `bootstrap` array you specify the bootstrapping (root) component.
-
 <br><br>
 
 ### **Components are Important!** <span id="a0201"></span><a href="#top02">&#8593;</a>
@@ -177,7 +171,7 @@ We start with the app.component - the root component which holds our entire appl
 
 <br>
 
-Component is simply a TypeScript class, then Angular is able to instantiate it to create objects based on the blueprint we set up.
+Component is simply a TypeScript class, so then Angular is able to instantiate it to create objects based on the blueprint we set up.
 
 <br>
 
@@ -274,7 +268,7 @@ It is okay to use this approach when you have not so much code in your template,
 
 <br>
 
-- To define styling for a component, go to (any component, here root component) the app.`component.ts` (class) file (css: app.`component.css`)
+- To define styling for a component, go to (any component, here root component) the app.`component.ts`
 - Here you can point to external stylesheets:
   - `styleUrls: ['./app.component.css', './another.css']`,
 - You can also use inline styling - in the class file - app.`component.ts`:
@@ -333,6 +327,12 @@ selector: ".app-servers";
 ```
 
 - Selecting by `id` or `pseudo-selectors` (e.g. `:hover`) won't work.
+
+<br><br>
+
+```
+Business Logic - In computer software, business logic or domain logic is the part of the program that encodes the real-world business rules that determine how data can be created, stored, and changed.
+```
 
 <br><br>
 
@@ -418,7 +418,7 @@ Besides pointing to HTML element properties, you can also bind to other properti
 
 <br>
 
-You can also output the current value of `allowNewServer` - a boolean:
+You can output the current value of `allowNewServer` - a boolean:
 
 ```html
 <p>{{ allowNewServer }}</p>
@@ -495,7 +495,7 @@ Passing `$event` as an argument:
 
 <br>
 
-With `$event` passed as an argument to the event we're calling, we can capture `(input)` data, or used anywhere between these quotation marks in the code we're executing.
+With `$event` passed as an argument to the event we're calling, we can capture `(input)` data, or use it anywhere between these quotation marks in the code we're executing.
 
 <br>
 
@@ -580,9 +580,9 @@ export class ServersComponent implements OnInit {
       "Server was created! Name is " + this.serverName;
   }
 
-  onUpdateServerName(event: Event) {
-    this.serverName = (<HTMLInputElement>event.target).value;
-  }
+  // onUpdateServerName(event: Event) {
+  //   this.serverName = (<HTMLInputElement>event.target).value;
+  // }
 }
 ```
 
@@ -894,6 +894,13 @@ More code:
 </div>
 ```
 
+<br>
+
+```ts
+// ternary operator:
+condition ? ifCondition : elseCondition;
+```
+
 <br><br>
 
 <hr>
@@ -904,9 +911,9 @@ More code:
 
 <br><br>
 
-1. <a href="#a0300">aaa</a>
-2. <a href="#a0301">aaa</a>
-3. <a href="#a0302">aaa</a>
+1. <a href="#a0300">Planning the App</a>
+2. <a href="#a0301">Setting up the Application</a>
+3. <a href="#a0302">Creating the Components</a>
 4. <a href="#a0303">aaa</a>
 5. <a href="#a0304">aaa</a>
 6. <a href="#a0305">aaa</a>
@@ -917,8 +924,47 @@ More code:
 
 <br><br>
 
-### **aaa** <span id="a0300"></span><a href="#top03">&#8593;</a>
+### **Planning the App** <span id="a0300"></span><a href="#top03">&#8593;</a>
 
 <br>
 
-Soon
+The first step in creating an Angular application is to lay out the structure of this app and plan which components you're probably going to need (which can be changed later), how to nest them, which models you're going to need (`interfaces`).
+
+- Structure:
+  - Components
+  - Nesting
+  - Models (`interfaces`)
+
+<br><br>
+
+### **Setting up the Application** <span id="a0301"></span><a href="#top03">&#8593;</a>
+
+<br>
+
+`ng new appName --no-strict`
+
+<br>
+
+`npm install bootstrap@3` (or a newer version)
+
+<br>
+
+Add bootstrap to `angular.json`, in the build {styles[]}:
+
+```json
+"build": {
+  "builder": "@angular-devkit/build-angular:browser",
+  "options": {
+    "styles": [
+      "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+      "src/styles.css"
+    ]
+  }
+}
+```
+
+<br><br>
+
+### **Creating the Components** <span id="a0302"></span><a href="#top03">&#8593;</a>
+
+<br>
