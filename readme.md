@@ -913,14 +913,7 @@ condition ? ifCondition : elseCondition;
 
 1. <a href="#a0300">Planning the App</a>
 2. <a href="#a0301">Setting up the Application</a>
-3. <a href="#a0302">Creating the Components</a>
-4. <a href="#a0303">aaa</a>
-5. <a href="#a0304">aaa</a>
-6. <a href="#a0305">aaa</a>
-7. <a href="#a0306">aaa</a>
-8. <a href="#a0307">aaa</a>
-9. <a href="#a0308">aaa</a>
-10. <a href="#a0309">aaa</a>
+3. <a href="#a0302">Next steps</a>
 
 <br><br>
 
@@ -965,6 +958,178 @@ Add bootstrap to `angular.json`, in the build {styles[]}:
 
 <br><br>
 
-### **Creating the Components** <span id="a0302"></span><a href="#top03">&#8593;</a>
+### **Next steps** <span id="a0302"></span><a href="#top03">&#8593;</a>
+
+<br><br>
+
+#### **Creating the Components**
 
 <br>
+
+Generate components without testing files:
+
+<br>
+
+`ng generate component --skip-tests=true component-name`
+
+<br>
+
+`ng generate component --skip-tests=true parent-component/child-component`
+
+<br><br>
+
+#### **Creating a "Recipe Model**
+
+<br>
+
+A Model is simply a TypeScript file with a class inside of it - a blueprint describing how an object should look.
+
+<br>
+
+Create a recipe model: `recipe.model.ts`:
+
+```ts
+export class Recipe {
+  public name: string;
+  public description: string;
+  public imagePath: string;
+
+  constructor(name: string, desc: string, imagePath: string) {
+    this.name = name;
+    this.description = desc;
+    this.imagePath = imagePath;
+  }
+}
+```
+
+```ts
+export class RecipeListComponent implements OnInit {
+  // ...
+  recipes: Recipe[] = [];
+  // ...
+}
+```
+
+<br><br>
+
+#### **Adding Content to the Recipes Components**
+
+<br>
+
+Using a Class:
+
+```ts
+export class Recipe {
+  public name: string;
+  public description: string;
+  public imagePath: string;
+
+  constructor(name: string, desc: string, imagePath: string) {
+    this.name = name;
+    this.description = desc;
+    this.imagePath = imagePath;
+  }
+}
+```
+
+```ts
+  recipes: RecipeTest[] = [
+    new Recipe(
+      'A Test Recipe',
+      'This is a test description',
+      'https://cdn.pixabay.com/photo/2016/06/15/19/09/food-1459693_960_720.jpg'
+    ),
+  ];
+```
+
+<br>
+
+Using an Interface:
+
+```ts
+export interface RecipeTest {
+  name: string;
+  description: string;
+  imagePath: string;
+}
+```
+
+```ts
+  recipes: Array<RecipeTest> = [
+    {
+      name: 'A Test Recipe',
+      description: 'This is a test description',
+      imagePath:
+        'https://cdn.pixabay.com/photo/2016/06/15/19/09/food-1459693_960_720.jpg',
+    },
+  ];
+```
+
+<br><br>
+
+#### **Creating an "Ingredient" Model**
+
+<br>
+
+```ts
+// the "normal" way
+export class Ingredient {
+  public name: string;
+  public amount: number;
+
+  constructor(name: string, amount: number) {
+    this.name = name;
+    this.amount = amount;
+  }
+}
+
+// the shorter way:
+export class Ingredient {
+  constructor(public name: string, public amount: number) {}
+}
+```
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 04: Debugging** <a href="#nav">&#8593;</a> <span id="top04"></span>
+
+<br><br>
+
+1. <a href="#a0400">Understanding Angular Error Messages</a>
+2. <a href="#a0401">Debugging Code in Browser Using Sourcemaps</a>
+
+<br><br>
+
+### **Understanding Angular Error Messages** <span id="a0400"></span><a href="#top04">&#8593;</a>
+
+<br>
+
+Don't panic, look at the message, read which file it points to, read the exact message.
+
+<br><br>
+
+### **Debugging Code in Browser Using Sourcemaps** <span id="a0400"></span><a href="#top04">&#8593;</a>
+
+<br>
+
+Debugging Code at runtime: go to Sources, there you'll see bundles, click on the `main.bundle.js`, then click on a line you want to debug.
+
+<br>
+
+JavaScript supports sourcemaps. Sourcemaps are a little addition the CLI kind of adds to our bundles which allow the browser to translate JS code to TS, or just simply map the JS code to our TS files.
+
+<br>
+
+Then after you're redirected to a TS file, you can for example click an element to be redirected again to the code that does something with an element.
+
+<br>
+
+But scanning the whole `main.bundle.js` gets harder as the project grows, instead you can directly access your TypeScript files:
+
+- Sources: webpack/./src/app/TS-Files
+
+<br><br>
