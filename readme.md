@@ -10,6 +10,12 @@
 
 ### <a href="#top02">**Section-02**</a>
 
+### <a href="#top03">**Section-03**</a>
+
+### <a href="#top04">**Section-04**</a>
+
+### <a href="#top05">**Section-05**</a>
+
 </nav>
 
 <br><br>
@@ -1112,7 +1118,7 @@ Don't panic, look at the message, read which file it points to, read the exact m
 
 <br><br>
 
-### **Debugging Code in Browser Using Sourcemaps** <span id="a0400"></span><a href="#top04">&#8593;</a>
+### **Debugging Code in Browser Using Sourcemaps** <span id="a0401"></span><a href="#top04">&#8593;</a>
 
 <br>
 
@@ -1137,3 +1143,410 @@ But scanning the whole `main.bundle.js` gets harder as the project grows, instea
 <hr>
 
 <br><br>
+
+## **Section 05: Components & Databinding Deep Dive** <a href="#nav">&#8593;</a> <span id="top05"></span>
+
+<br><br>
+
+1. <a href="#a0500">Property & Event Binding Overview</a>
+2. <a href="#a0501">Binding to Custom Properties</a>
+3. <a href="#a0502">Assigning an Alias to Custom Properties</a>
+4. <a href="#a0503">Binding to Custom Events</a>
+5. <a href="#a0504">Assigning an Alias to Custom Events</a>
+6. <a href="#a0505">Custom Property and Event Binding Summary</a>
+7. <a href="#a0506">Understanding View Encapsulation</a>
+8. <a href="#a0507">Using Local References in Templates</a>
+9. <a href="#a0508">@ViewChild() in Angular 8+</a>
+10. <a href="#a0509">Getting Access to the Template & DOM with @ViewChild</a>
+11. <a href="#a0510">Projecting Content into Components with ng-content</a>
+
+<br><br>
+
+### **Property & Event Binding Overview** <span id="a0500"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+E.g. we used `[disabled]="expression"` to send data to an element.
+
+<br>
+
+Property & Event Binding:
+
+- HTML Elements
+  - Native Properties & Events
+- Directives
+  - Custom Properties & Events
+- Components
+  - Custom Properties & Events
+
+<br><br>
+
+### **Binding to Custom Properties** <span id="a0501"></span><a href="#top05">&#8593;</a>
+
+<br>
+```html
+<!-- the contents of component that uses this element (e.g. parent component) -->
+<app-some-component
+  *ngFor="let item of items"
+  [element]="item"
+></app-some-component>
+<!-- [element]="item" -->
+<!-- element - property name from another component -->
+<!-- item - the element we store for each iteration -->
+```
+
+For now we can't access the `[element]`, since by default all properties of components are only accessible inside this components, not from outside.
+
+<br>
+
+To allow other components to be able to bind (use) to the `[element]` property, you need add something to that `[element]` property, which is a decorator.
+
+<br>
+
+#### Binding to Custom Properties - Sharing data between components
+
+Which simply means you 'expose' data from a component that's sharing that data, so that other components will be able to use it.
+
+<br>
+
+Add `@Input()` before a property/data you want to share between components:
+
+```ts
+import { Input } from "@angular/core";
+
+// ...
+
+export class dataSharingComponent {
+  // exposing data from a component using @Input() decorator:
+  @Input() property!: someType;
+}
+```
+
+<br><br>
+
+### **Assigning an Alias to Custom Properties** <span id="a0502"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+Assigning an Alias for the property (an argument for the @Input decorator). You can use that alias only OUTSIDE of the component that is exposing the data.
+
+```ts
+// export class SomeComponent ...
+@Input('prop') property: type;
+// prop - custom property name (alias)
+```
+
+```html
+<app-some-component
+  *ngFor="let item of items"
+  [prop]="item"
+></app-some-component>
+```
+
+<br><br>
+
+### **Binding to Custom Events** <span id="a0503"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+Now the other way around - we want to 'inform' the parent component that something changed within the child component. E.g. a new server was created.
+
+<br>
+
+Create methods that receive data after an event occurred within the child component:
+
+- Parent Component
+
+```ts
+export class ParentComponent {
+  objArr: Array<any> = [];
+
+  // onObjectAdded - after an event occurred within a child component
+  onObjectAdded(eventData: { objName: string; objContent: string }) {
+    this.objArr.push({
+      objName: eventData.objName,
+      objContent: eventData.objContent,
+    });
+  }
+}
+```
+
+Binding a custom event to a component:
+
+```html
+<app-child (objectCreated)="onObjectAdded($event)"></app-child>
+```
+
+- Child Component (event data sharing component)
+
+<br>
+
+`EventEmitter` - object in Angular Framework which allows you to emit your own events.
+
+<br>
+
+```ts
+import { EventEmitter, Output } from "@angular/core";
+
+// ...
+
+export class childComponent {
+  // creating a custom event object with EventEmitter:
+  // Add Output() decorator to make this event 'listenable' from the outside
+  // We're passing the (objectCreated) event out of this component
+  @Output() objectCreated = new EventEmitter<{
+    objName: string;
+    objContent: string;
+  }>();
+  newObjName = "";
+  newObjContent = "";
+
+  // ...
+
+  onAddObject() {
+    // emitting a new event of type objectCreated
+    this.objectCreated.emit({
+      objName: this.newObjName,
+      objContent: this.newObjContent,
+    });
+  }
+}
+```
+
+<br>
+
+With that we're emitting our own event, we're passing the data, and making it listenable from the outside.
+
+<br><br>
+
+### **Assigning an Alias to Custom Events** <span id="a0504"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+```ts
+export class childComponent {
+  // adding an alias to a custom event
+  // now you can listen to this custom event by its alias OUTSIDE of this component
+  @Output("objCreated") objectCreated = new EventEmitter<{
+    objName: string;
+    objContent: string;
+  }>();
+}
+```
+
+Listen to a custom event by its alias in another component:
+
+```html
+<app-child (objCreated)="onObjectAdded($event)"></app-child->
+<!-- now it's "objCreated" instead of "objectCreated" -->
+```
+
+<br><br>
+
+### **Custom Property and Event Binding Summary** <span id="a0505"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+Component communication:
+
+- `@Input()` gives you the ability to make your properties bindable from outside
+  - e.g. the (parent) component is using the (child) component's data
+- `@Output()` gives you the ability to listen to your own events which you create with `new EventEmitter`
+  - e.g. the (parent) component is using the (child) component's event data
+
+<br><br>
+
+### **Understanding View Encapsulation** <span id="a0506"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+#### View Encapsulation - ShadowDom
+
+View Encapsulation - Angular forced behaviour: A component's styles are only applied to this component (to its elements).
+
+<br><br>
+
+#### More on View Encapsulation
+
+<br>
+
+You can overwrite Angular's CSS behaviour by adding encapsulation property:
+
+```ts
+@Component({
+  // ...
+  encapsulation: ViewEncapsulation.None, // Emulated, ShadowDom
+  // Emulated(default) - ShadowDom in older browsers
+  // ...
+})
+```
+
+This will overwrite `ShadowDom` and apply (this component's) styling globally.
+
+<br><br>
+
+### **Using Local References in Templates** <span id="a0507"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+Getting the current Input (value) data (e.g. during an event) using `local reference`:
+
+```html
+<!-- <input type="text" class="form-control" [(ngModel)]="objName" /> -->
+<input type="text" class="form-control" #inputReference />
+
+<!-- passing local reference (data) to a method during a click event -->
+<button class="btn btn-primary" (click)="onAddObject(inputReference)">
+  Add Object
+</button>
+```
+
+`Local reference` is a reference to an element which holds all its properties. You can use `local references` everywhere in your template, only there.
+
+<br>
+
+You can access the data like this:
+
+```ts
+onAddObject(inputRef: HTMLInputElement) {
+  this.objectCreated.emit({
+    objName: inputRef.value,
+    objContent: inputRef.value,
+  })
+}
+```
+
+or directly in the template:
+
+```html
+{{ serverNameInput.value }}
+```
+
+<br><br>
+
+### **@ViewChild() in Angular 8+** <span id="a0508"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+In **Angular 8+**, the `@ViewChild()` syntax which you'll see in the next lecture needs to be changed slightly:
+
+Instead of:
+
+```ts
+@ViewChild('serverContentInput') serverContentInput: ElementRef;
+```
+
+use
+
+```ts
+@ViewChild('serverContentInput', {static: true}) serverContentInput: ElementRef;
+```
+
+The same change (add `{ static: true } `as a second argument) needs to be applied to ALL usages of `@ViewChild()` (and also `@ContentChild()` which you'll learn about later) IF you plan on accessing the selected element inside of `ngOnInit()`.
+
+If you DON'T access the selected element in `ngOnInit` (but anywhere else in your component), set `static: false` instead!
+
+If you're using **Angular 9+**, you only need to add `{ static: true }` (if needed) but not `{ static: false }`.
+
+<br><br>
+
+### **Getting Access to the Template & DOM with @ViewChild** <span id="a0509"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+There is another way of getting access to `local reference` or any element directly from TypeScript code.
+
+<br>
+
+Getting data with `@ViewChild()` decorator.
+
+<br>
+
+First assign a `local reference`:
+
+```html
+<input type="text" class="form-control" #inputRef />
+```
+
+```ts
+@ViewChild('inputRef') inputContent!: ElementRef;
+// of type ElementRef, you need to import it from @angular/core
+
+onAddObject(inputRef: HTMLInputElement) {
+  this.objectCreated.emit({
+    objName: inputRef.value,
+    // accessing the value of an element
+    objContent: this.inputContent.nativeElement.value,
+  })
+}
+```
+
+<br>
+
+`@Viewchild()` decorator accepts two arguments:
+
+1: Element Selector (string) or component type, e.g. @Viewchild(AppComponent)
+
+2: `{ static: true }` IF you plan on accessing the element inside of ngOnInit(), otherwise use `{ static: false }` (which is default, so you don't have to set it).
+
+<br>
+
+With this we passed data using `local reference` passed to methods OR `local references` fetched through `Viewchild()`, without using two-way-binding.
+
+<br>
+
+**Note**: it is not a good practice to set the DOM's element value, e.g. `this.inputContent.nativeElement.value = 'something';`.
+
+You shouldn't access DOM elements like this, Angular has better ways of doing that.
+
+<br><br>
+
+### **Projecting Content into Components with ng-content** <span id="a0510"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+Another way to pass data around - using ng-content.
+
+<br>
+
+Normally if you place content between opening-and-closing tags of your component, Angular will ignore that. You can change it with `ng-content` directive:
+
+<br>
+
+Child Component:
+
+```html
+<div class="panel panel-default">
+  <div class="panel-heading">{{ element.name }}</div>
+  <div class="panel-body">
+    <!-- ng-content instead of <p>...</p> -->
+    <ng-content></ng-content>
+  </div>
+</div>
+```
+
+Parent Component:
+
+```html
+<!-- ... -->
+<div>
+  <app-child-component *ngFor="let item of items" [ele]="item">
+    <!-- the content that was formerly inside of the ChildComponent -->
+    <p>
+      <strong *ngIf="item.type === 'server'" style="color: red"
+        >{{ serverElement.content }}</strong
+      >
+      <em *ngIf="item.type === 'blueprint'">{{ serverElement.content }}</em>
+    </p>
+    <!-- / -->
+  </app-child-component>
+</div>
+```
+
+<br>
+
+What happens is we add the content using ng-content hook, the content between opening and closing tags of app-child-component will be projected into ChildComponent's template.
+
+<br><br>
+
+<hr>

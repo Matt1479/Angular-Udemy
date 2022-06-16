@@ -15,6 +15,8 @@ export class AppComponent {
 
   items: Array<any> = [];
 
+  updating = false;
+
   constructor() {}
 
   // onContentUpdate(event: Event) {
@@ -27,9 +29,11 @@ export class AppComponent {
       title: this.itemTitle,
       content: this.itemContent,
     });
+    this.itemTitle = '';
+    this.itemContent = '';
   }
 
-  deleteItem(item: any) {
+  onDelete(item: any) {
     let index = this.items.indexOf(item);
 
     this.items.splice(index, 1);
@@ -37,8 +41,34 @@ export class AppComponent {
     // this.items.splice(this.items.indexOf(item), this.items.indexOf(item) + 1);
   }
 
-  // updateItem(item: any) {
-  // let index = this.items.indexOf(item);
-  // console.log(index);
-  // }
+  onEdit(item: any) {
+    this.updating = true;
+    let index = this.items.indexOf(item);
+    console.log(index);
+
+    this.itemTitle = this.items[index].title;
+    this.itemContent = this.items[index].content;
+
+    this.indexOfItem = index;
+  }
+
+  onUpdate() {
+    if (this.itemTitle === '' || this.itemContent === '') return;
+
+    // this.items.push({
+    //   title: this.itemTitle,
+    //   content: this.itemContent,
+    // });
+
+    this.itemTitle = this.items[this.indexOfItem].title;
+
+    console.log(
+      this.indexOfItem,
+      this.items[this.indexOfItem].title,
+      this.itemTitle
+    );
+    this.itemTitle = '';
+    this.itemContent = '';
+    this.updating = false;
+  }
 }

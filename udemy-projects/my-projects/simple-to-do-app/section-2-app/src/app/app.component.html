@@ -22,8 +22,19 @@
         <!-- (input)="onContentUpdate($event)" -->
       </textarea>
     </div>
-    <button class="btn btn-primary btn-lg btn-block" (click)="addItem()">
+    <button
+      *ngIf="!updating"
+      class="btn btn-primary btn-lg btn-block"
+      (click)="addItem()"
+    >
       Add item
+    </button>
+    <button
+      *ngIf="updating"
+      class="btn btn-warning btn-lg btn-block"
+      (click)="onUpdate()"
+    >
+      Update item
     </button>
   </div>
 
@@ -35,14 +46,14 @@
         [ngClass]="{ success: i > 1 }"
       >
         <div>
-          <h1 class="title">{{ item.title }}</h1>
-          <p class="content">{{ item.content }}</p>
+          <h1 class="title">{{ items[i].title }}</h1>
+          <p class="content">{{ items[i].content }}</p>
         </div>
         <div>
-          <!-- <button class="btn btn-warning btn-sm b" (click)="updateItem(item)">
-            Update
-          </button> -->
-          <button class="btn btn-danger btn-sm b" (click)="deleteItem(item)">
+          <button class="btn btn-warning btn-sm b" (click)="onEdit(item)">
+            Edit
+          </button>
+          <button class="btn btn-danger btn-sm b" (click)="onDelete(item)">
             Delete
           </button>
         </div>
