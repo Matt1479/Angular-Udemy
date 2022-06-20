@@ -1,0 +1,21 @@
+<div class="row">
+  <div class="col-xs-12">
+    <h1 class="text-center p-3 pt-4">Add an Item or a Card</h1>
+
+    <label>Item Name</label>
+    <input type="text" class="form-control" [(ngModel)]="newItemName" />
+
+    <label>Item Content</label>
+    <textarea
+      type="text"
+      class="form-control"
+      [(ngModel)]="newItemContent"
+    ></textarea>
+    <br />
+
+    <button class="btn btn-secondary" (click)="onAddItem()">Add an Item</button>
+    <button class="btn btn-warning float-end" (click)="onAddCard()">
+      Add a Card
+    </button>
+  </div>
+</div>

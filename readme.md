@@ -1159,6 +1159,11 @@ But scanning the whole `main.bundle.js` gets harder as the project grows, instea
 9. <a href="#a0508">@ViewChild() in Angular 8+</a>
 10. <a href="#a0509">Getting Access to the Template & DOM with @ViewChild</a>
 11. <a href="#a0510">Projecting Content into Components with ng-content</a>
+12. <a href="#a0511">Understanding the Component Lifecycle</a>
+13. <a href="#a0512">Seeing Lifecycle Hooks in Action</a>
+14. <a href="#a0513">Lifecycle Hooks and Template Access</a>
+15. <a href="#a0514">Getting Access to ng-content with @ContentChild</a>
+16. <a href="#a0515">Summary</a>
 
 <br><br>
 
@@ -1184,6 +1189,7 @@ Property & Event Binding:
 ### **Binding to Custom Properties** <span id="a0501"></span><a href="#top05">&#8593;</a>
 
 <br>
+
 ```html
 <!-- the contents of component that uses this element (e.g. parent component) -->
 <app-some-component
@@ -1246,6 +1252,10 @@ Assigning an Alias for the property (an argument for the @Input decorator). You 
 <br><br>
 
 ### **Binding to Custom Events** <span id="a0503"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+Sharing data through events.
 
 <br>
 
@@ -1383,6 +1393,16 @@ You can overwrite Angular's CSS behaviour by adding encapsulation property:
 
 This will overwrite `ShadowDom` and apply (this component's) styling globally.
 
+<br>
+
+```ts
+@Component({
+  encapsulation: ViewEncapsulation.Emulated, // default
+  encapsulation: ViewEncapsulation.None,
+  encapsulation: ViewEncapsulation.ShadowDom,
+})
+```
+
 <br><br>
 
 ### **Using Local References in Templates** <span id="a0507"></span><a href="#top05">&#8593;</a>
@@ -1458,7 +1478,7 @@ There is another way of getting access to `local reference` or any element direc
 
 <br>
 
-Getting data with `@ViewChild()` decorator.
+Getting access (to DOM element) data with `@ViewChild()` decorator.
 
 <br>
 
@@ -1545,8 +1565,165 @@ Parent Component:
 
 <br>
 
-What happens is we add the content using ng-content hook, the content between opening and closing tags of app-child-component will be projected into ChildComponent's template.
+What happens is we add the content using ng-content hook, the content between opening and closing tags of app-child-component will be projected into ChildComponent's template (in the place where you added the ng-content directive).
 
 <br><br>
 
-<hr>
+#### Sharing data through components - summary:
+
+<br>
+
+> Binding to custom properties - @Input() decorating a property
+
+> Binding to custom events - @Output() + EventEmitter (creating custom events)
+
+> Local reference:
+
+- local reference passed through method call
+- local reference + @ViewChild
+
+> ng-content directive
+
+<br><br>
+
+### **Understanding the Component Lifecycle** <span id="a0511"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+If a new component is instantiated (created), Angular goes through a couple of different phases in this creation process, and will give us the possibility to hook into these phases and execute some code. We can hook into this phases by implementing some methods Angular will call if they are present.
+
+<br>
+
+#### Lifecycle of a component - lifecycle hooks
+
+|                                                                                                                                                         |                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ngOnChanges                                                                                                                                             | called on component creation, but also after a bound input property (variable) changes (properties decorated by @Input()), (primitives only!) |
+| ngOnChanges would be good to use when if you want to react to any changes and then do something with the old values, store it before it dumped or smth. |                                                                                                                                               |
+| ngOnInit                                                                                                                                                | Called once the component is initialized, it runs after the `constructor()`                                                                   |
+| ngDoCheck                                                                                                                                               | Called during every change detection run (e.g. during an event, value change, etc.)                                                           |
+| ngAfterContentInit                                                                                                                                      | Called after content (ng-content) has been projected into a view (parent component view)                                                      |
+| ngAfterContentChecked                                                                                                                                   | Called every time the projected content has been checked                                                                                      |
+| ngAfterViewInit                                                                                                                                         | Called after the component's view (and child views) has been initialized                                                                      |
+| ngAfterViewChecked                                                                                                                                      | Called every time the view (and child views) has been checked                                                                                 |
+| ngOnDestroy                                                                                                                                             | Called once the component is about to be destroyed                                                                                            |
+
+<br><br>
+
+### **Seeing Lifecycle Hooks in Action** <span id="a0512"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+ngOnChanges is the only lifecycle hook that accepts arguments:
+
+```ts
+ngOnChanges(changes: SimpleChanges) {
+  console.log('ngOnChanges called!');
+  console.log(changes);
+}
+```
+
+<br><br>
+
+### **Lifecycle Hooks and Template Access** <span id="a0513"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+ngAfterViewInit gives you access to template (DOM) elements, you can then access them and use their values and so on. You can't access template (DOM) elements before ngAfterViewInit, (e.g within ngOnInit) because those hasn't been rendered yet.
+
+<br><br>
+
+For **@ContentChild()**, the same adjustments as for <a href="#a0508">**@ViewChild()**</a> apply.
+
+<br><br>
+
+### **Getting Access to ng-content with @ContentChild** <span id="a0514"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+Getting access to content with ngAfterContentInit (using @ContentChild() and local reference) which is stored in another component, then passed on via ng-content.
+
+```html
+<p #paragraphElement>{{ object.name }}</p>
+```
+
+```ts
+@ContentChild('paragraphElement', { static: true }) paragraph!: ElementRef;
+
+// ...
+
+ngAfterContentInit() {
+  console.log(this.paragraph.nativeElement.textContent);
+}
+```
+
+<br><br>
+
+### **Summary (not only Section-05)** <span id="a0515"></span><a href="#top05">&#8593;</a>
+
+<br>
+
+#### **Databinding**
+
+<br>
+
+#### **Output Data (Typescript Code -> Template (HTML))**
+
+- **String Interpolation** ( `{{ data }}` )
+- **Property Binding** ( `[property]="data"` )
+
+<br>
+
+#### **React to (User) Events**
+
+- **Event Binding** ( `(event)="expression"` )
+
+<br>
+
+#### **Combination of Both**
+
+- **Two-Way-Binding** ( `[(ngModel)]="data"` )
+  - we are able to react to events and output something at the same time
+
+<br><br>
+
+#### **Built-in Directives**
+
+- **ngIf, ngIf (w/else)** (structural)
+- **ngFor, ngFor (w/index)** (structural)
+- **ngClass & ngStyle**
+
+<br>
+
+#### **Local reference**
+
+<br>
+
+#### **Databinding - custom**
+
+- **@Input()** - make your properties bindable/accessible from outside
+- **@Output()** - create & listen to your own events (which you create with new EventEmitter)
+
+<br>
+
+#### **View Encapsulation & ShadowDom**
+
+```ts
+@Component({
+  encapsulation: ViewEncapsulation.Emulated, // default
+  encapsulation: ViewEncapsulation.None,
+  encapsulation: ViewEncapsulation.ShadowDom,
+})
+```
+
+<br>
+
+#### **<a href="#a0509">Getting access (to DOM element) template data with `@ViewChild()` decorator**
+
+<br>
+
+#### **<a href="#a0514">Getting Access to ng-content with @ContentChild</a>**
+
+<br>
+
+#### **<a href="#a0511">Lifecycle Hooks</a>**

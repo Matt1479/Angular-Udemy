@@ -1,4 +1,0 @@
-section 5 project - a simple app that is divided to 2-3 components,
-and they share data between them (child - root) - both event and prop data
-
-could be the to do app rebuilt (with 2 types of notes: Add note / Add different colored note (h1/p)

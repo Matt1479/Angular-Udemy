@@ -1,0 +1,5 @@
+edit button which copies the values of items/cards, could be done with ngOnChanges()
+puts them into the input fields,
+replaces the buttons with (click)="onUpdate()"
+the method replaces the values and empties input fields, again use ngOnChanges maybe,
+then hides the update button and shows the normal ones

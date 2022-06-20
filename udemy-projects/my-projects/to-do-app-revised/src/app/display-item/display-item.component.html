@@ -1,0 +1,21 @@
+<div
+  class="panel panel-default mb-3 p-2 border-top border-bottom"
+  [ngClass]="{
+    'border-warning': item.type === 'card',
+    'border-secondary': item.type === 'item'
+  }"
+>
+  <!-- <ng-content></ng-content> -->
+  <ng-content></ng-content>
+  <div class="panel-heading text-center display-5 pt-2">
+    <b>{{ item.name }}</b>
+    <br />
+  </div>
+  <div class="panel-body pt-3 pb-3">
+    <p>
+      <em>
+        {{ item.content }}
+      </em>
+    </p>
+  </div>
+</div>
