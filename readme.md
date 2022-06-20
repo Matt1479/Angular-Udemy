@@ -1695,7 +1695,7 @@ ngAfterContentInit() {
 
 <br>
 
-#### **Local reference**
+#### **Local reference - add # (hash) to mark/access an element**
 
 <br>
 
@@ -1718,12 +1718,12 @@ ngAfterContentInit() {
 
 <br>
 
-#### **<a href="#a0509">Getting access (to DOM element) template data with `@ViewChild()` decorator**
+#### **<a href="#a0509">Getting access (to DOM element) template data with `@ViewChild()` decorator and local reference**
 
 <br>
 
-#### **<a href="#a0514">Getting Access to ng-content with @ContentChild</a>**
+#### **<a href="#a0514">Getting Access to ng-content with @ContentChild decorator and local reference</a>**
 
 <br>
 
-#### **<a href="#a0511">Lifecycle Hooks</a>**
+#### **<a href="#a0511">Lifecycle Hooks - tapping into component lifecycle</a>**
