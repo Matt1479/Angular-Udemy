@@ -1596,17 +1596,17 @@ If a new component is instantiated (created), Angular goes through a couple of d
 
 #### Lifecycle of a component - lifecycle hooks
 
-|                                                                                                                                                         |                                                                                                                                               |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| ngOnChanges                                                                                                                                             | called on component creation, but also after a bound input property (variable) changes (properties decorated by @Input()), (primitives only!) |
-| ngOnChanges would be good to use when if you want to react to any changes and then do something with the old values, store it before it dumped or smth. |                                                                                                                                               |
-| ngOnInit                                                                                                                                                | Called once the component is initialized, it runs after the `constructor()`                                                                   |
-| ngDoCheck                                                                                                                                               | Called during every change detection run (e.g. during an event, value change, etc.)                                                           |
-| ngAfterContentInit                                                                                                                                      | Called after content (ng-content) has been projected into a view (parent component view)                                                      |
-| ngAfterContentChecked                                                                                                                                   | Called every time the projected content has been checked                                                                                      |
-| ngAfterViewInit                                                                                                                                         | Called after the component's view (and child views) has been initialized                                                                      |
-| ngAfterViewChecked                                                                                                                                      | Called every time the view (and child views) has been checked                                                                                 |
-| ngOnDestroy                                                                                                                                             | Called once the component is about to be destroyed                                                                                            |
+|                                                                                                                                                 |                                                                                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ngOnChanges                                                                                                                                     | called on component creation, but also after a bound input property (variable) changes (properties decorated by @Input()), (primitives only!) |
+| ngOnChanges would be good to use if you want to react to any changes and then do something with the old values, store it before it dumped, etc. |                                                                                                                                               |
+| ngOnInit                                                                                                                                        | Called once the component is initialized, it runs after the `constructor()`                                                                   |
+| ngDoCheck                                                                                                                                       | Called during every change detection run (e.g. during an event, value change, etc.)                                                           |
+| ngAfterContentInit                                                                                                                              | Called after content (ng-content) has been projected into a view (parent component view)                                                      |
+| ngAfterContentChecked                                                                                                                           | Called every time the projected content has been checked (finished projecting all content)                                                    |
+| ngAfterViewInit                                                                                                                                 | Called after the component's view (and child views) has been initialized                                                                      |
+| ngAfterViewChecked                                                                                                                              | Called every time the view (and child views) has been checked                                                                                 |
+| ngOnDestroy                                                                                                                                     | Called once the component is about to be destroyed                                                                                            |
 
 <br><br>
 
@@ -1702,7 +1702,7 @@ ngAfterContentInit() {
 #### **Databinding - custom**
 
 - **@Input()** - make your properties bindable/accessible from outside
-- **@Output()** - create & listen to your own events (which you create with new EventEmitter)
+- **@Output()** - make your custom events listenable from the outside, (create (and listen to) your custom events with new EventEmitter)
 
 <br>
 
@@ -1727,3 +1727,9 @@ ngAfterContentInit() {
 <br>
 
 #### **<a href="#a0511">Lifecycle Hooks - tapping into component lifecycle</a>**
+
+<br><br>
+
+<hr>
+
+<br><br>
