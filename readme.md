@@ -1596,17 +1596,17 @@ If a new component is instantiated (created), Angular goes through a couple of d
 
 #### Lifecycle of a component - lifecycle hooks
 
-|                                                                                                                                                 |                                                                                                                                               |
-| ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| ngOnChanges                                                                                                                                     | called on component creation, but also after a bound input property (variable) changes (properties decorated by @Input()), (primitives only!) |
-| ngOnChanges would be good to use if you want to react to any changes and then do something with the old values, store it before it dumped, etc. |                                                                                                                                               |
-| ngOnInit                                                                                                                                        | Called once the component is initialized, it runs after the `constructor()`                                                                   |
-| ngDoCheck                                                                                                                                       | Called during every change detection run (e.g. during an event, value change, etc.)                                                           |
-| ngAfterContentInit                                                                                                                              | Called after content (ng-content) has been projected into a view (parent component view)                                                      |
-| ngAfterContentChecked                                                                                                                           | Called every time the projected content has been checked (finished projecting all content)                                                    |
-| ngAfterViewInit                                                                                                                                 | Called after the component's view (and child views) has been initialized                                                                      |
-| ngAfterViewChecked                                                                                                                              | Called every time the view (and child views) has been checked                                                                                 |
-| ngOnDestroy                                                                                                                                     | Called once the component is about to be destroyed                                                                                            |
+|                                                                                                                                                      |                                                                                                                                               |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| ngOnChanges                                                                                                                                          | called on component creation, but also after a bound input property (variable) changes (properties decorated by @Input()), (primitives only!) |
+| ngOnChanges would be good to use if you want to react to any changes and then do something with the old values, store it before it gets dumped, etc. |                                                                                                                                               |
+| ngOnInit                                                                                                                                             | Called once the component is initialized, it runs after the `constructor()`                                                                   |
+| ngDoCheck                                                                                                                                            | Called during every change detection run (e.g. during an event, value change, etc.)                                                           |
+| ngAfterContentInit                                                                                                                                   | Called after content (ng-content) has been projected into a view (parent component view)                                                      |
+| ngAfterContentChecked                                                                                                                                | Called every time the projected content has been checked (finished projecting all content)                                                    |
+| ngAfterViewInit                                                                                                                                      | Called after the component's view (and child views) has been initialized                                                                      |
+| ngAfterViewChecked                                                                                                                                   | Called every time the view (and child views) has been checked                                                                                 |
+| ngOnDestroy                                                                                                                                          | Called once the component is about to be destroyed                                                                                            |
 
 <br><br>
 
@@ -1733,3 +1733,85 @@ ngAfterContentInit() {
 <hr>
 
 <br><br>
+
+## **Section 06: Course Project - Components & Databinding** <a href="#nav">&#8593;</a> <span id="top06"></span>
+
+<br><br>
+
+1. <a href="#a0100">Adding Navigation with Event Binding and ngIf</a>
+2. <a href="#a0101">Passing Recipe Data with Property Binding</a>
+3. <a href="#a0102">sss</a>
+4. <a href="#a0103">sss</a>
+
+<br><br>
+
+### **Adding Navigation with Event Binding and ngIf** <span id="a0600"></span><a href="#top06">&#8593;</a>
+
+<br>
+
+Passing custom arguments to a event:
+
+```html
+<ul class="nav navbar-nav">
+  <li><a href="#" (click)="onSelect('recipe')">Recipes</a></li>
+  <li><a href="#" (click)="onSelect('shopping-list')">Shopping List</a></li>
+</ul>
+```
+
+You could even pass `$event` as a second argument i.e. `(click)="onSelect('recipe', $event)"`.
+
+<br><br>
+
+### **Passing Data with Event and Property Binding (Combined)** <span id="a0601"></span><a href="#top06">&#8593;</a>
+
+**Note**: You can't listen to "nested" events, meaning you can't listen to an even of a child of a child.
+
+<br><br>
+
+### **Allowing the User to Add Ingredients to the Shopping List** <span id="a0601"></span><a href="#top06">&#8593;</a>
+
+<br>
+
+2 ways to get data from the template to TypeScript code:
+
+- #1: **local reference** on input element, then **passed as an argument** during a `(click)` event, then logged:
+
+#2:
+
+```html
+<input type="text" id="name" class="form-control" #nameInput />
+
+<button class="btn btn-success" type="button" (click)="onAddItem(nameInput)">
+  Add
+</button>
+```
+
+```ts
+onAddItem(nameInp: HTMLInputElement) {
+  console.log(this.nameInp.value);
+}
+```
+
+<br>
+
+- #2: **local reference** on input element, then local reference selected in ts code with **@ViewChild()** decorator ( `@ViewChild('localRef') name: ElementRef;` ), then logged during `(click)` event:
+
+#2:
+
+```html
+<input type="text" id="name" class="form-control" #nameInput />
+
+<button class="btn btn-success" type="button" (click)="onAddItem()">Add</button>
+```
+
+```ts
+@ViewChild('nameInput', { static: false }) name: ElementRef;
+
+onAddItem() {
+  console.log(this.name.nativeElement.value);
+}
+```
+
+<br><br>
+
+<!-- stopped at 2:42 -->
