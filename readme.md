@@ -1767,7 +1767,7 @@ You could even pass `$event` as a second argument i.e. `(click)="onSelect('recip
 
 <br><br>
 
-### **Allowing the User to Add Ingredients to the Shopping List** <span id="a0601"></span><a href="#top06">&#8593;</a>
+### **Allowing the User to Add Ingredients to the Shopping List** <span id="a0602"></span><a href="#top06">&#8593;</a>
 
 <br>
 
