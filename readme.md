@@ -1775,7 +1775,7 @@ You could even pass `$event` as a second argument i.e. `(click)="onSelect('recip
 
 - #1: **local reference** on input element, then **passed as an argument** during a `(click)` event, then logged:
 
-#2:
+#1:
 
 ```html
 <input type="text" id="name" class="form-control" #nameInput />
