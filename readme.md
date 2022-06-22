@@ -1738,10 +1738,9 @@ ngAfterContentInit() {
 
 <br><br>
 
-1. <a href="#a0100">Adding Navigation with Event Binding and ngIf</a>
-2. <a href="#a0101">Passing Recipe Data with Property Binding</a>
-3. <a href="#a0102">sss</a>
-4. <a href="#a0103">sss</a>
+1. <a href="#a0600">Adding Navigation with Event Binding and ngIf</a>
+2. <a href="#a0601">Passing Recipe Data with Property Binding</a>
+3. <a href="#a0602">Allowing the User to Add Ingredients to the Shopping List</a>
 
 <br><br>
 
