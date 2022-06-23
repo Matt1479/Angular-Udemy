@@ -16,6 +16,10 @@
 
 ### <a href="#top05">**Section-05**</a>
 
+### <a href="#top06">**Section-06**</a>
+
+### <a href="#top07">**Section-07**</a>
+
 </nav>
 
 <br><br>
@@ -1812,3 +1816,446 @@ onAddItem() {
 ```
 
 <br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 07: Directives Deep Dive** <a href="#nav">&#8593;</a> <span id="top07"></span>
+
+<br><br>
+
+1. <a href="#a0700">Introduction</a>
+2. <a href="#a0701">ngFor and ngIf Recap</a>
+3. <a href="#a0702">ngClass and ngStyle Recap</a>
+4. <a href="#a0703">Creating a Basic Attribute Directive</a>
+5. <a href="#a0704">Using the Renderer to build a Better Attribute Directive</a>
+6. <a href="#a0705">Using HostListener to Listen to Host Events</a>
+7. <a href="#a0706">Using HostBinding to Bind to Host Properties</a>
+8. <a href="#a0707">Binding to Directive Properties</a>
+9. <a href="#a0708">What Happens behind the Scenes on Structural Directives</a>
+10. <a href="#a0709">Building a Structural Directive</a>
+11. <a href="#a0710">Understanding ngSwitch</a>
+
+<br><br>
+
+### **Introduction** <span id="a0700"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+Attribute vs Structural
+
+- Attribute Directives are called like this because they're set on elements just like attributes (does not change the DOM)
+
+  - looks like a normal HTML Attribute (possibly with databinding or event binding)
+  - only affect/change the element they are added to
+
+- Structural Directives basically do the same, but they also change the structure of the DOM around this element (e.g. \*ngIf on paragraph can either remove of add this element).
+  - look like a normal HTML Attribute, but have a leading asterisk (\*)
+  - Affect a whole area in the DOM (elements get added or removed).
+
+<br><br>
+
+### **ngFor and ngIf Recap** <span id="a0701"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+**Note**: You can't stack/use two structural directives on one element.
+
+<br><br>
+
+### **ngClass and ngStyle Recap** <span id="a0702"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+```html
+<div
+  [ngClass]="{ class: conditions(applyOrNot) }"
+  [ngStyle]="{ styleName: styleValue(conditionsStyleAOrStyleB) }"
+></div>
+```
+
+<br><br>
+
+### **Creating a Basic Attribute Directive** <span id="a0703"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+```ts
+import { Directive, ElementRef, OnInit } from "@angular/core";
+
+// Directive() decorator needs at least one argument - selector
+@Directive({
+  // square brackets are NOT part of the name, it's part of the selector's style
+  // meaning we can apply it without square brackets inside of a template
+  // naving convention: camelCasedSelectorName
+  selector: "[appCustomDirective]",
+})
+export class CustomDirective implements OnInit {
+  // getting access to element the directive was placed o
+  // injecting element's reference in constructor
+  constructor(private elementReference: ElementRef) {}
+
+  // overwriting the style of that element
+  ngOnInit(): void {
+    this.elementReference.nativeElement.style.backgroundColor = "green";
+  }
+}
+```
+
+To apply the custom directive, we have to inform Angular that this Directive exists - we have to add it to appModule in the declarations array:
+
+```ts
+// ...
+import { CustomDirective } from "./path";
+
+@NgModule({
+  declarations: [CustomDirective],
+  // ...
+})
+export class AppModule {}
+```
+
+<br>
+
+Now let's add our custom directive to an element:
+
+```html
+<p appCustomDirective>Style me with custom directive!</p>
+```
+
+<br>
+
+Though applying styling like that isn't a good practice, let's improve it...
+
+<br><br>
+
+### **Using the Renderer to build a Better Attribute Directive** <span id="a0704"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+Create a custom directive with CLI:
+
+```
+ng g directive directiveName
+
+or
+
+ng g d directiveName
+```
+
+<br>
+
+Use the `renderer` property to do actions on DOM elements, e.g. change the style:
+
+```ts
+this.renderer.setStyle(
+  this.eleRef.nativeElement,
+  "style-name",
+  "style-value",
+  flags
+);
+// flags - !important flag, etc.
+```
+
+<br>
+
+Building the 'better' directive:
+
+```ts
+// ...
+export class BetterHighlightDirective implements OnInit {
+  // injecting element's reference in constructor & getting the renderer to change DOM elements
+  constructor(private eleRef: ElementRef, private renderer: Renderer2) {}
+
+  ngOnInit() {
+    this.renderer.setStyle(
+      this.eleRef.nativeElement,
+      "background-color",
+      "blue"
+    );
+  }
+}
+```
+
+```html
+<p appBetterHighlight>Style me with a better directive!</p>
+```
+
+<br>
+
+It's a better way of doing it because... you simply could get error if you'd try to access DOM elements like this:
+
+```ts
+this.elementReference.nativeElement.style.backgroundColor = "green";
+```
+
+<br><br>
+
+More about Renderer Methods <a href="https://angular.io/api/core/Renderer2#methods">here</a>
+
+<br><br>
+
+### **Using HostListener to Listen to Host Events** <span id="a0705"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+Upgrading our directive to listen to Host Events:
+
+```ts
+// ...
+export class BetterHighlightDirective implements OnInit {
+  constructor(private eleRef: ElementRef, private renderer: Renderer2) {}
+
+  ngOnInit() {}
+
+  // @HostListener('event') methodName(eventData: Event)
+  @HostListener("mouseenter") mouseover(eventData: Event) {
+    this.renderer.setStyle(
+      this.eleRef.nativeElement,
+      "background-color",
+      "blue"
+    );
+  }
+
+  @HostListener("mouseleave") mouseleave(eventData: Event) {
+    this.renderer.setStyle(
+      this.eleRef.nativeElement,
+      "background-color",
+      "transparent"
+    );
+  }
+}
+```
+
+<br><br>
+
+### **Using HostBinding to Bind to Host Properties** <span id="a0706"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+```ts
+export class customDirective {
+  // binding a style.styleName to (any DOM) element with @HostBinding()
+  @HostBinding("style.styleName") propName: string = "transparent";
+
+  // e.g.
+  @HostBinding("style.backgroundColor") backgroundColor!: string;
+
+  constructor(private eleRef: ElementRef, private renderer: Renderer2) {}
+
+  // @HostListener('DOMEventSelector') methodName(eventData: Event)
+  @HostListener("mouseenter") mouseover(eventData: Event) {
+    this.backgroundColor = "blue";
+  }
+
+  @HostListener("mouseleave") mouseleave(eventData: Event) {
+    this.backgroundColor = "transparent";
+  }
+}
+```
+
+<br><br>
+
+### **Binding to Directive Properties** <span id="a0707"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+```html
+<p appBetterHighlight [defaultColor]="'yellow'" [highlightColor]="'red'">
+  Style me with a better directive!
+</p>
+
+<!-- @Input('appBetterHighlight') highlightColor: string = 'blue';
+<p [appBetterHighlight]="'red'" [defaultColor]="'yellow'">
+        Style me with a better directive!
+</p>
+-->
+
+<!-- if you remove square brackets (no prop binding), you don't have to use single quotes
+<p appBetterHighlight defaultColor="yellow" [highlightColor]="'red'">
+        Style me with a better directive!
+</p>
+-->
+```
+
+```ts
+// finished directive
+import {
+  Directive,
+  ElementRef,
+  HostBinding,
+  HostListener,
+  Input,
+  OnInit,
+  Renderer2,
+} from "@angular/core";
+
+@Directive({
+  selector: "[appBetterHighlight]",
+})
+export class BetterHighlightDirective implements OnInit {
+  // creating properties that are accessible from the outside,
+  // so we can set the values using property binding and a custom directive
+  @Input() defaultColor: string = "transparent";
+  @Input() highlightColor: string = "blue";
+
+  // adding an alias, so we can bind it like this: [appBetterHighlight]="'red'"
+  // @Input('appBetterHighlight') highlightColor: string = 'blue';
+
+  // binding a style.styleName to (any DOM) element with @HostBinding()
+  @HostBinding("style.backgroundColor") backgroundColor: string =
+    this.defaultColor;
+
+  // injecting element's reference in constructor & getting the renderer to change DOM elements
+  constructor(private eleRef: ElementRef, private renderer: Renderer2) {}
+
+  ngOnInit() {
+    // set it initially so it won't be white at the start
+    this.backgroundColor = this.defaultColor;
+  }
+
+  // @HostListener('DOMEventSelector') methodName(eventData: Event)
+  @HostListener("mouseenter") mouseover(eventData: Event) {
+    this.renderer.setStyle(
+      this.eleRef.nativeElement,
+      "background-color",
+      "blue"
+    );
+    this.backgroundColor = this.highlightColor;
+  }
+
+  @HostListener("mouseleave") mouseleave(eventData: Event) {
+    this.renderer.setStyle(
+      this.eleRef.nativeElement,
+      "background-color",
+      "transparent"
+    );
+    this.backgroundColor = this.defaultColor;
+  }
+}
+```
+
+<br><br>
+
+### **What Happens behind the Scenes on Structural Directives** <span id="a0708"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+The asterisk (`*`) means that this is a structural directive. Behind the scenes Angular will transform them (structural directives) into something else, since there's no such thing as `*` operator in Angular.
+
+<br>
+
+For example this *ngIf (`*ngIf="!onlyOdd"`) check could be written like this:
+
+```html
+<ng-template [ngIf]="!onlyOdd">
+  <!-- content we conditionally want to render -->
+  <div>
+    <li
+      class="list-group-item"
+      *ngFor="let even of evenNumbers"
+      [ngClass]="{ even: even % 2 === 0 }"
+      [ngStyle]="{
+        backgroundColor: even % 2 !== 0 ? 'yellow' : 'transparent'
+      }"
+    >
+      {{ even }}
+    </li>
+  </div>
+</ng-template>
+```
+
+<br><br>
+
+### **Building a Structural Directive** <span id="a0709"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+Note: You can access custom structural directives with ng-template, just like with ngIf, or just use the `*appDirectiveName`.
+
+<br>
+
+`UnlessDirective` - the opposite of `*ngIf`:
+
+```ts
+import { Directive, Input, TemplateRef, ViewContainerRef } from "@angular/core";
+
+@Directive({
+  selector: "[appUnless]",
+})
+export class UnlessDirective {
+  // setter of a property
+  // the setter gets executed whenever the property changes
+  // it changes whenever it changes outside of this directive,
+  // so whenever the condition changes or some parameter of this condition
+  @Input() set appUnless(condition: boolean) {
+    if (!condition) {
+      // createEmbeddedView creates a view in this viewContainer and the view is our templateRef
+      this.vcRef.createEmbeddedView(this.templateRef);
+    } else {
+      // if the condition is true, then we're removing the element from the DOM
+      // so it is reversed *ngIf
+      this.vcRef.clear();
+    }
+  }
+
+  // specifying the place in the DOM where it should be rendered:
+
+  // first argument - templateRef - what should we render - gives us access to the template
+
+  // second argument - viewContainerRef - where should we render it
+  // vcRef marks the place where we should render this directive in the document
+  constructor(
+    private templateRef: TemplateRef<any>,
+    private vcRef: ViewContainerRef
+  ) {}
+  // remember to add this directive to appModule
+}
+```
+
+```html
+<div *appUnless="onlyOdd">
+  <li
+    class="list-group-item"
+    *ngFor="let even of evenNumbers"
+    [ngClass]="{ even: even % 2 === 0 }"
+    [ngStyle]="{ backgroundColor: even % 2 !== 0 ? 'yellow' : 'transparent' }"
+  >
+    {{ even }}
+  </li>
+</div>
+```
+
+<br><br>
+
+### **Understanding ngSwitch** <span id="a0710"></span><a href="#top07">&#8593;</a>
+
+<br>
+
+ngSwitch directive - displaying different options conditionally:
+
+```ts
+value = 10;
+```
+
+<br>
+
+```html
+<div [ngSwitch]="value">
+  <p *ngSwitchCase="5">Value is 5</p>
+  <p *ngSwitchCase="10">Value is 10</p>
+  <p *ngSwitchCase="100">Value is 100</p>
+  <p *ngSwitchDefault>Value is Default</p>
+</div>
+```
+
+So in this case only paragraph with `*ngSwitchCase="10"` will be displayed. In case if it's a number other than 5, 10 or 100, it will use the `*ngSwitchDefault` fallback.
+
+<br>
+
+It would be good to use instead of many `*ngIf`s.
+
+<br><br>
+
+<hr>
