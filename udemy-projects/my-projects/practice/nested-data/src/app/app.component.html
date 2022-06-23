@@ -1,0 +1,10 @@
+<div class="container">
+  <div class="col-xs-12">
+    <div class="row">
+      <app-child-one
+        (sendDataC1)="getData($event)"
+        [childOneProp]="rootData"
+      ></app-child-one>
+    </div>
+  </div>
+</div>
