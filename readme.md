@@ -1600,17 +1600,17 @@ If a new component is instantiated (created), Angular goes through a couple of d
 
 #### Lifecycle of a component - lifecycle hooks
 
-|                                                                                                                                                      |                                                                                                                                               |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| ngOnChanges                                                                                                                                          | called on component creation, but also after a bound input property (variable) changes (properties decorated by @Input()), (primitives only!) |
-| ngOnChanges would be good to use if you want to react to any changes and then do something with the old values, store it before it gets dumped, etc. |                                                                                                                                               |
-| ngOnInit                                                                                                                                             | Called once the component is initialized, it runs after the `constructor()`                                                                   |
-| ngDoCheck                                                                                                                                            | Called during every change detection run (e.g. during an event, value change, etc.)                                                           |
-| ngAfterContentInit                                                                                                                                   | Called after content (ng-content) has been projected into a view (parent component view)                                                      |
-| ngAfterContentChecked                                                                                                                                | Called every time the projected content has been checked (finished projecting all content)                                                    |
-| ngAfterViewInit                                                                                                                                      | Called after the component's view (and child views) has been initialized                                                                      |
-| ngAfterViewChecked                                                                                                                                   | Called every time the view (and child views) has been checked                                                                                 |
-| ngOnDestroy                                                                                                                                          | Called once the component is about to be destroyed                                                                                            |
+|                                                                                                                                                      |                                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| ngOnChanges                                                                                                                                          | called on component creation, but also after a bound input (`@Input()`) property changes (properties decorated by @Input(), primitives only) |
+| ngOnChanges would be good to use if you want to react to any changes and then do something with the old values, store it before it gets dumped, etc. |                                                                                                                                              |
+| ngOnInit                                                                                                                                             | Called once the component is initialized, it runs after the `constructor()`                                                                  |
+| ngDoCheck                                                                                                                                            | Called during every change detection run (e.g. during an event, value change, etc.)                                                          |
+| ngAfterContentInit                                                                                                                                   | Called after content (ng-content) has been projected into a view                                                                             |
+| ngAfterContentChecked                                                                                                                                | Called every time the projected content has been checked (finished projecting all content)                                                   |
+| ngAfterViewInit                                                                                                                                      | Called after the component's view (and child views) has been initialized                                                                     |
+| ngAfterViewChecked                                                                                                                                   | Called every time the view (and child views) has been checked                                                                                |
+| ngOnDestroy                                                                                                                                          | Called once the component is about to be destroyed                                                                                           |
 
 <br><br>
 
@@ -2009,8 +2009,8 @@ export class BetterHighlightDirective implements OnInit {
 
   ngOnInit() {}
 
-  // @HostListener('event') methodName(eventData: Event)
-  @HostListener("mouseenter") mouseover(eventData: Event) {
+  // @HostListener('event') methodName(eventData: Event - optional, pass in those if you need event data)
+  @HostListener("mouseenter") mouseover() {
     this.renderer.setStyle(
       this.eleRef.nativeElement,
       "background-color",
@@ -2018,7 +2018,7 @@ export class BetterHighlightDirective implements OnInit {
     );
   }
 
-  @HostListener("mouseleave") mouseleave(eventData: Event) {
+  @HostListener("mouseleave") mouseleave() {
     this.renderer.setStyle(
       this.eleRef.nativeElement,
       "background-color",
@@ -2042,14 +2042,12 @@ export class customDirective {
   // e.g.
   @HostBinding("style.backgroundColor") backgroundColor!: string;
 
-  constructor(private eleRef: ElementRef, private renderer: Renderer2) {}
-
   // @HostListener('DOMEventSelector') methodName(eventData: Event)
-  @HostListener("mouseenter") mouseover(eventData: Event) {
+  @HostListener("mouseenter") mouseover() {
     this.backgroundColor = "blue";
   }
 
-  @HostListener("mouseleave") mouseleave(eventData: Event) {
+  @HostListener("mouseleave") mouseleave() {
     this.backgroundColor = "transparent";
   }
 }
@@ -2255,6 +2253,80 @@ So in this case only paragraph with `*ngSwitchCase="10"` will be displayed. In c
 <br>
 
 It would be good to use instead of many `*ngIf`s.
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 08: Course Project - Directives** <a href="#nav">&#8593;</a> <span id="top08"></span>
+
+<br><br>
+
+1. <a href="#a0800">Building and Using a Dropdown Directive</a>
+2. <a href="#a0801">Closing the Dropdown From Anywhere</a>
+
+<br><br>
+
+### **Building and Using a Dropdown Directive** <span id="a0800"></span><a href="#top08">&#8593;</a>
+
+<br>
+
+Attach a class on click, and remove it on another click:
+
+```ts
+import { Directive, HostBinding, HostListener } from "@angular/core";
+
+@Directive({
+  selector: "[appDropdown]",
+})
+export class DropdownDirective {
+  // bind to class property of an element, an array of classes
+  // it won't be attached initially since it's false
+  @HostBinding("class.open") isOpen = false;
+
+  @HostListener("click") toggleOpen() {
+    // on click (method call) true changes to false, false to true
+    // this.isOpen equals to what it's NOT
+    this.isOpen = !this.isOpen;
+  }
+}
+```
+
+Remember to add it to appModule
+
+<br><br>
+
+### **Closing the Dropdown From Anywhere** <span id="a0801"></span><a href="#top08">&#8593;</a>
+
+<br>
+
+If you want that a dropdown can also be closed by a click anywhere outside (which also means that a click on one dropdown closes any other one, btw.), replace the code of `dropdown.directive.ts` by this one (placing the listener not on the dropdown, but on the document):
+
+<br>
+
+```ts
+import {
+  Directive,
+  ElementRef,
+  HostBinding,
+  HostListener,
+} from "@angular/core";
+
+@Directive({
+  selector: "[appDropdown]",
+})
+export class DropdownDirective {
+  @HostBinding("class.open") isOpen = false;
+  @HostListener("document:click", ["$event"]) toggleOpen(event: Event) {
+    this.isOpen = this.elRef.nativeElement.contains(event.target)
+      ? !this.isOpen
+      : false;
+  }
+  constructor(private elRef: ElementRef) {}
+}
+```
 
 <br><br>
 
