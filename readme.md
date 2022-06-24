@@ -2331,3 +2331,436 @@ export class DropdownDirective {
 <br><br>
 
 <hr>
+
+<br><br>
+
+## **Section 09: Using Services & Dependency Injection** <a href="#nav">&#8593;</a> <span id="top09"></span>
+
+<br><br>
+
+1. <a href="#a0900">Introduction</a>
+2. <a href="#a0901">Creating a Logging Service</a>
+3. <a href="#a0902">Injecting the Logging Service into Components</a>
+4. <a href="#a0903">Creating a Data Service</a>
+5. <a href="#a0904">Understanding the Hierarchical Injector</a>
+6. <a href="#a0905">How many Instances of Service Should It Be?</a>
+7. <a href="#a0906">Injecting Services into Services</a>
+8. <a href="#a0907">Using Services for Cross-Component Communication</a>
+9. <a href="#a0908">A Different Way Of Injecting Services</a>
+
+<br><br>
+
+### **Introduction** <span id="a0900"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+A service is another piece of your Angular app, another class you can add which acts as a central repository as a central business unit, something what you can store, what you can centralize your code in.
+
+<br>
+
+Duplication of code and data storage (providing data) are typical use cases for a service.
+
+<br>
+
+An example of using services would be creating a `LogService` to centralize our log data, and `UserService` to use it as a Data Storage.
+
+<br>
+
+<img src="./img/services.png">
+
+<br><br>
+
+### **Creating a Logging Service** <span id="a0901"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+`logging.service.ts`:
+
+```ts
+export class LoggingService {
+  logStatusChange(status: string) {
+    console.log("A server status changed, new status: " + status);
+  }
+}
+```
+
+You could also create a service using CLI:
+
+```
+ng generate service serviceName
+```
+
+or
+
+```
+ng g s serviceName
+```
+
+**Note**: Do not instantiate services on your own!! (e.g. `const s = new ServiceName`), Angular has much better ways to do it.
+
+<br><br>
+
+### **Injecting the Logging Service into Components** <span id="a0902"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+> #### **Hierarchical Injector**
+
+<br>
+
+Injecting Services - Angular's `Dependency Injector`.
+
+<br>
+
+Dependency is something a class of ours will depend on. For example the `NewAccountComponent` depends on that `LoggingService`, because we want to call method in that service.
+
+<br>
+
+The `Dependency Injector` simply injects this dependency, injects an instance of this class into our Component automatically.
+
+<br>
+
+All we need to do is we need to inform Angular that we require such a instance.
+
+<br><br>
+
+Reminder about how the TypeScript shortcut parameter/property assignment
+
+<br>
+
+This is the same
+
+```ts
+constructor(private loggingService: LoggingService) {  }
+```
+
+as this
+
+```ts
+private loggingService: LoggingService;
+
+constructor(loggingService: LoggingService) {
+  this.loggingService = loggingService;
+}
+```
+
+<br><br>
+
+Informing Angular that we require a Service's instance:
+
+```ts
+// bind it to a property by using TS shortcut of adding an accessor in from of the name of an argument
+// to instantly create a property with the same name and bind a value to it
+// the type has to be the class you want to get injected
+constructor(private loggingService: LoggingService) {}
+```
+
+This simple task will inform Angular that we will need an instance of this `LoggingService`.
+
+<br>
+
+There's one step left - we need to provide a service. It means we need to tell Angular how to create it.
+
+To do that we simply have to add `providers` property to `@Component({ ..., providers: [LoggingService] })`.
+
+After that we can access (instantiate) our service: `this.loggingService.logStatusChange(accountStatus);`.
+
+<br><br>
+
+```ts
+import { Component, EventEmitter, Output } from "@angular/core";
+import { LoggingService } from "../logging.service";
+
+@Component({
+  selector: "app-new-account",
+  templateUrl: "./new-account.component.html",
+  styleUrls: ["./new-account.component.css"],
+  // #2 add it to providers - inform Angular how to create this service
+  providers: [LoggingService],
+})
+export class NewAccountComponent {
+  @Output() accountAdded = new EventEmitter<{ name: string; status: string }>();
+
+  // #1 inject a service
+  constructor(private loggingService: LoggingService) {}
+
+  onCreateAccount(accountName: string, accountStatus: string) {
+    this.accountAdded.emit({
+      name: accountName,
+      status: accountStatus,
+    });
+    // #3 instantiate it using Angular
+    this.loggingService.logStatusChange(accountStatus);
+  }
+}
+```
+
+<br>
+
+Services are a great tool to DRY (Don't Repeat Yourself), especially in bigger projects.
+
+<br><br>
+
+### **Creating a Data Service** <span id="a0903"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+Note: Don't forget about the difference between Reference-Types (obj, arr) and Primitives.
+
+```ts
+export class AccountsService {
+  accounts = [
+    {
+      name: "Master Account",
+      status: "active",
+    },
+    {
+      name: "Testaccount",
+      status: "inactive",
+    },
+    {
+      name: "Hidden Account",
+      status: "unknown",
+    },
+  ];
+
+  addAccount(name: string, status: string) {
+    this.accounts.push({
+      name: name,
+      status: status,
+    });
+  }
+
+  updateStatus(id: number, status: string) {
+    this.accounts[id].status = status;
+  }
+}
+```
+
+<br><br>
+
+### **Understanding the Hierarchical Injector** <span id="a0904"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+Angular Dependency Injector is a Hierarchical Injector.
+
+That means that if we provide a service in some place of our app, let's say in one component.
+
+The Angular framework knows how to create an instance of that service for this component and all its child components, and actually this component and all its child components and the child components of the child components will receive the same instance of that service.
+
+<br>
+
+There are other places where we can provide a service too:
+
+- The highest possible level is the `AppModule` - **The Same Instance** of Service is available **Application-wide** - in the whole app, in all components, directives, services, etc.
+
+- The next level would be the `AppComponent`- **The Same Instance** of Service is available for **all Components** (but **not for other services**) - all the child components of `AppComponent` will have the same instance of that service
+
+  - this works the same for other components - if we provide a service to a child component, all the children of that child component will have the same instance
+  - The instances don't propagate up, they only go down that tree of components
+
+- The lowest level: A single component with NO child components
+  - if we provide a service to that component, this component will have its own instance of that service, and this instance will be available only for this component, and **this will overwrite the same service if we were to provide the same service on a higher level**
+
+<br>
+
+In summary:
+
+<img src="./img/hierarchical-injector.png">
+
+<br><br>
+
+### **How many Instances of Service Should It Be?** <span id="a0905"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+Changing the default service behaviour - we want different instances for different components.
+
+How can we do that? Simple - remove it from the providers array in the **child component**. Don't remove it from the constructor, because it tells Angular that we want that instance, the providers array basically which instance.
+
+```ts
+// remove that from child components,
+// it only belongs to the parent component
+providers: [AccountsService],
+```
+
+So this is the difference - a difference in Instances (parent instantiates and uses it, children only use that instance).
+
+<br><br>
+
+### **Injecting Services into Services** <span id="a0906"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+Adding an Instance of a Service into the root - `appModule`
+
+```ts
+// ...
+import { AccountComponent } from './account/account.component';
+// ...
+
+@NgModule({
+  declarations: [AppComponent, ...],
+  imports: [...],
+  providers: [AccountsService],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+```
+
+With that we're making sure that our whole application receives the same instance of that service **unless** it overwrites it.
+
+With that we can inject a service into another service.
+
+<br>
+
+Let's inject a service into another service:
+
+```ts
+import { LoggingService } from "./logging.service";
+
+export class AccountsService {
+  accounts = [
+    {
+      name: "Master Account",
+      status: "active",
+    },
+    {
+      name: "Testaccount",
+      status: "inactive",
+    },
+    {
+      name: "Hidden Account",
+      status: "unknown",
+    },
+  ];
+
+  // #1 Inject the service
+  constructor(private loggingService: LoggingService) {}
+
+  addAccount(name: string, status: string) {
+    this.accounts.push({
+      name: name,
+      status: status,
+    });
+    // #2 call the methods / use the service
+    this.loggingService.logStatusChange(status);
+  }
+
+  updateStatus(id: number, status: string) {
+    this.accounts[id].status = status;
+    this.loggingService.logStatusChange(status);
+  }
+}
+```
+
+If you inject a service into something, this something needs to have some metadata attached to it. A component has some metadata because we have `@Component()`. A directive have some metadata because we have `@Directive()`. A service doesn't have metadata, we need to attach it:
+
+```ts
+import { Injectable } from "@angular/core";
+
+@Injectable()
+export class AccountsService {
+  //...
+}
+```
+
+This tells Angular that now this service is injectable, or that something can be injected in there.
+
+You add `@Injectable()` to the service where you want to inject something, so the receiving service.
+
+<br>
+
+You don't need it to any other Service, if you don't want to inject anything in a Service, you don't need to add `@Injectable()`, only add it if you expect to get something injected.
+
+<br>
+
+**Note**: In newer versions of Angular it is recommended to always add `@Injectable()`.
+
+<br><br>
+
+### **Using Services for Cross-Component Communication** <span id="a0907"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+Create this custom event inside of a service:
+
+```ts
+statusUpdated = new EventEmitter<string>();
+```
+
+Emit inside of a component:
+
+```ts
+  onSetTo(status: string) {
+    // ...
+    this.accountsService.statusUpdated.emit(status);
+  }
+```
+
+Then subscribe to that emitted event:
+
+```ts
+ngOnInit(): void {
+  // subscribing to an observable is equivalent to adding an event listener
+  // EventEmitter wraps an observable
+  // So we're catching the new status and displaying it
+  this.accountsService.statusUpdated.subscribe((status: string) =>
+    alert('New Status: ' + status)
+  );
+}
+```
+
+Note: Later in the Observables section you will learn about another construct you can use to emit events and subscribe to it instead of using EventEmitter.
+
+<br>
+
+Note: Make sure to use the right amount of instances, and if you inject services into services, make sure to provide the service on `AppModule` level, and to add `@Injectable()` to the service where you want to inject that in.
+
+<br><br>
+
+### **A Different Way Of Injecting Services** <span id="a0908"></span><a href="#top09">&#8593;</a>
+
+<br>
+
+If you're using Angular 6+ (check your `package.json` to find out), you can provide application-wide services in a different way.
+
+<br>
+
+Instead of adding a service class to the `providers[]` array in `AppModule`, you can set the following config in `@Injectable()`:
+
+```ts
+@Injectable({
+  providedIn: 'root'
+})
+export class MyService { ... }
+```
+
+This is exactly the same as:
+
+```ts
+export class MyService { ... }
+```
+
+and
+
+```ts
+import { MyService } from './path/to/my.service';
+
+@NgModule({
+    ...
+    providers: [MyService]
+})
+export class AppModule { ... }
+```
+
+<br>
+
+Using this syntax is completely optional, the traditional syntax (using `providers[]` ) will also work.
+
+<br>
+
+The "new syntax" does offer one advantage though: Services can be **loaded lazily** by Angular (behind the scenes) and redundant code can be removed automatically. This can lead to a better performance and loading speed - though this really only kicks in for bigger services and apps in general.
+
+<br>
