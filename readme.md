@@ -2358,7 +2358,7 @@ A service is another piece of your Angular app, another class you can add which 
 
 <br>
 
-Duplication of code and data storage (providing data) are typical use cases for a service.
+(Avoiding) Duplication of code, and data storage (providing data) are typical use cases for a service.
 
 <br>
 

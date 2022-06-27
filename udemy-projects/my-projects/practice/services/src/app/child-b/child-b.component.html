@@ -1,0 +1,53 @@
+<div class="row">
+  <div class="col-xs-12 col-md-8 col-md-offset-2">
+    <div
+      class="panel panel-default mb-3 p-2 border rounded"
+      [ngClass]="{
+        'border-danger': card.colour === 'red',
+        'border-success': card.colour === 'green',
+        'border-primary': card.colour === 'blue'
+      }"
+    >
+      <button
+        type="button"
+        class="close border-0 float-end bg-white text-danger"
+        aria-label="Close"
+        (click)="onDeleteCard()"
+      >
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="panel-heading text-center display-5 pt-2">
+        <h5>{{ card.name }}</h5>
+      </div>
+      <div class="panel-body pt-3 pb-3">
+        <p>{{ card.content }}</p>
+      </div>
+      <div class="panel-body pt-3 pb-3">
+        <p>
+          This card is
+          <span
+            [ngClass]="{
+              'text-danger': card.colour === 'red',
+              'text-success': card.colour === 'green',
+              'text-primary': card.colour === 'blue'
+            }"
+          >
+            {{ card.colour }}
+          </span>
+        </p>
+      </div>
+
+      <p class="text-center">Change Colour</p>
+
+      <div class="d-flex justify-content-center m-1">
+        <button class="btn btn-danger" (click)="onSetColour('red')">Red</button>
+        <button class="btn btn-success" (click)="onSetColour('green')">
+          Green
+        </button>
+        <button class="btn btn-primary" (click)="onSetColour('blue')">
+          Blue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

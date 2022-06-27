@@ -1,0 +1,36 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-md-8 col-md-offset-2">
+      <div>
+        <p>1. Create 2 components.</p>
+        <p>
+          2. AppComponent is going to receive data from a service, then loop
+          through the data on Component B
+        </p>
+        <p>
+          3. Component A is going to create an item on click, log it through a
+          service, and send the data to a data storage service
+        </p>
+        <p>
+          4. Component B is going to receive that data, loop through it (from
+          AppComponent)
+        </p>
+        <p>
+          5. Component B and AppComponent will get index through property
+          binding and ngFor structural directive, then Component B will update
+          the data on click, or delete it
+        </p>
+      </div>
+
+      <hr />
+
+      <app-add-item></app-add-item>
+      <hr />
+      <app-display-item
+        *ngFor="let item of items; let i = index"
+        [item]="item"
+        [id]="i"
+      ></app-display-item>
+    </div>
+  </div>
+</div>

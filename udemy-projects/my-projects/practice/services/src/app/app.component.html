@@ -1,0 +1,14 @@
+<div class="container">
+  <div class="row m-1 mt-2 mb-2">
+    <div
+      class="col-xs-12 col-md-8 col-md-offset-2 border border-secondary rounded cardBg"
+    >
+      <app-child-a></app-child-a>
+      <app-child-b
+        *ngFor="let card of cards; let i = index"
+        [card]="card"
+        [id]="i"
+      ></app-child-b>
+    </div>
+  </div>
+</div>

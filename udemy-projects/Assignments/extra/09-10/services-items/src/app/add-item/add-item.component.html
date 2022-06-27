@@ -1,0 +1,25 @@
+<div class="row">
+  <div class="col-xs-12 col-md-8 col-md-offset-2">
+    <div>
+      <label> Item Name </label>
+      <input type="text" class="form-control" #inputNameRef />
+    </div>
+    <div>
+      <label> Item Colour </label>
+      <select class="form-control" #inputColourRef>
+        <option value="red">Red</option>
+        <option value="green">Green</option>
+        <option value="blue">Blue</option>
+      </select>
+    </div>
+
+    <div>
+      <button
+        class="btn btn-secondary"
+        (click)="onAddItem(inputNameRef.value, inputColourRef.value)"
+      >
+        Create an Item
+      </button>
+    </div>
+  </div>
+</div>
