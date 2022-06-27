@@ -2475,7 +2475,7 @@ import { LoggingService } from "../logging.service";
   selector: "app-new-account",
   templateUrl: "./new-account.component.html",
   styleUrls: ["./new-account.component.css"],
-  // #2 add it to providers - inform Angular how to create this service
+  // #2 add it to providers - inform Angular how to create this service (instance)
   providers: [LoggingService],
 })
 export class NewAccountComponent {
@@ -2489,7 +2489,7 @@ export class NewAccountComponent {
       name: accountName,
       status: accountStatus,
     });
-    // #3 instantiate it using Angular
+    // #3 use the service
     this.loggingService.logStatusChange(accountStatus);
   }
 }
@@ -2644,7 +2644,7 @@ export class AccountsService {
       name: name,
       status: status,
     });
-    // #2 call the methods / use the service
+    // #2 use the service
     this.loggingService.logStatusChange(status);
   }
 
@@ -2763,4 +2763,8 @@ Using this syntax is completely optional, the traditional syntax (using `provide
 
 The "new syntax" does offer one advantage though: Services can be **loaded lazily** by Angular (behind the scenes) and redundant code can be removed automatically. This can lead to a better performance and loading speed - though this really only kicks in for bigger services and apps in general.
 
-<br>
+<br><br>
+
+<hr>
+
+<br><br>
