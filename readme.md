@@ -20,6 +20,12 @@
 
 ### <a href="#top07">**Section-07**</a>
 
+### <a href="#top08">**Section-08**</a>
+
+### <a href="#top09">**Section-09**</a>
+
+### <a href="#top10">**Section-10**</a>
+
 </nav>
 
 <br><br>
@@ -2775,6 +2781,7 @@ The "new syntax" does offer one advantage though: Services can be **loaded lazil
 
 1. <a href="#a1000">Using a Service for Cross-Component Communication</a>
 2. <a href="#a1001">Using Services for Pushing Data from A to B</a>
+3. <a href="#a1002">Passing Ingredients from Recipes to the Shopping List (via a Service)</a>
 
 <br><br>
 
