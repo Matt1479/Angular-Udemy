@@ -1,24 +1,8 @@
 <div class="container">
   <div class="row">
     <div class="col-xs-12 col-md-8 col-md-offset-2">
-      <h3>Active Users</h3>
-      <ul class="list-group">
-        <app-active-users
-          *ngFor="let activeUser of activeUsers; let i = index"
-          [user]="activeUser"
-          [activeUserId]="i"
-        >
-        </app-active-users>
-      </ul>
-
-      <h3>Inactive Users</h3>
-      <ul class="list-group">
-        <app-inactive-users
-          *ngFor="let inactiveUser of inactiveUsers; let i = index"
-          [user]="inactiveUser"
-          [inactiveUserId]="i"
-        ></app-inactive-users>
-      </ul>
+      <app-active-users></app-active-users>
+      <app-inactive-users></app-inactive-users>
     </div>
     <!--
       Optimize this app by adding a UsersService which manages the active and inactive users.

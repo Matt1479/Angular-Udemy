@@ -2768,3 +2768,272 @@ The "new syntax" does offer one advantage though: Services can be **loaded lazil
 <hr>
 
 <br><br>
+
+## **Section 10: Course Project - Services & Dependency Injection** <a href="#nav">&#8593;</a> <span id="top10"></span>
+
+<br><br>
+
+1. <a href="#a1000">Using a Service for Cross-Component Communication</a>
+2. <a href="#a1001">Using Services for Pushing Data from A to B</a>
+
+<br><br>
+
+### **Using a Service for Cross-Component Communication** <span id="a1000"></span><a href="#top10">&#8593;</a>
+
+<br>
+
+```ts
+// RecipeService
+public recipeSelected = new EventEmitter<Recipe>();
+
+/////////////////////////////////////////////////////////
+
+// RecipesComponent
+export class RecipesComponent implements OnInit {
+  selectedRecipe: Recipe;
+
+  constructor(private recipeService: RecipeService) {}
+
+  ngOnInit(): void {
+    this.recipeService.recipeSelected.subscribe((recipe: Recipe) => {
+      this.selectedRecipe = recipe;
+    });
+  }
+
+  onSelectedRecipe(recipe: Recipe) {
+    this.selectedRecipe = recipe;
+    console.log(this.selectedRecipe);
+  }
+}
+```
+
+<br><br>
+
+### **Using Services for Pushing Data from A to B** <span id="a1001"></span><a href="#top10">&#8593;</a>
+
+<br>
+
+Shopping-Edit:
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    <form>
+      <div class="row">
+        <div class="col-sm-5 form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" class="form-control" #nameInput />
+        </div>
+        <div class="col-sm-2 form-group">
+          <label for="amount">Amount</label>
+          <input type="number" id="amount" class="form-control" #amountInput />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <button class="btn btn-success" type="button" (click)="onAddItem()">
+            Add
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+```
+
+```ts
+export class ShoppingEditComponent implements OnInit {
+  @ViewChild("nameInput", { static: false }) nameInputRef: ElementRef;
+  @ViewChild("amountInput", { static: false }) amountInputRef: ElementRef;
+
+  // #1 DI
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  ngOnInit(): void {}
+
+  onAddItem() {
+    const ingName = this.nameInputRef.nativeElement.value;
+    const ingAmount = this.amountInputRef.nativeElement.value;
+    const newIngredient = new Ingredient(ingName, ingAmount);
+
+    // #2 Add an Ingredient
+    this.shoppingListService.addIngredient(newIngredient);
+  }
+}
+```
+
+<br><br>
+
+Shopping-List:
+
+```html
+<div class="row">
+  <div class="col-xs-10">
+    <app-shopping-edit></app-shopping-edit>
+    <hr />
+    <ul class="list-group">
+      <a
+        href="#"
+        class="list-group-item"
+        style="cursor: pointer"
+        *ngFor="let ingredient of ingredients"
+      >
+        {{ ingredient.name }} ({{ ingredient.amount }})
+      </a>
+    </ul>
+  </div>
+</div>
+```
+
+```ts
+export class ShoppingListComponent implements OnInit {
+  ingredients: Ingredient[];
+
+  // #1 DI
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  ngOnInit(): void {
+    // copy ingredients array
+    this.ingredients = this.shoppingListService.getIngredients();
+
+    // subscribe to ingredientsChanged event (listen to every change)
+    this.shoppingListService.ingredientsChanged.subscribe(
+      // arrow function
+      // (args: type) => { fnBody }
+      (ingredients: Ingredient[]) => {
+        this.ingredients = ingredients;
+      }
+    );
+  }
+}
+```
+
+<br><br>
+
+Service:
+
+```ts
+import { EventEmitter, Injectable } from "@angular/core";
+import { Ingredient } from "../shared/ingredient.model";
+
+@Injectable({
+  providedIn: "root",
+})
+export class ShoppingListService {
+  // create a custom event
+  ingredientsChanged = new EventEmitter<Ingredient[]>();
+
+  private ingredients: Ingredient[] = [
+    new Ingredient("Apples", 5),
+    new Ingredient("Tomatoes", 10),
+  ];
+
+  getIngredients() {
+    // return a copy
+    return this.ingredients.slice();
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    // every time there's a new ingredient added:
+
+    // push a new ingredient
+    this.ingredients.push(ingredient);
+
+    // emit ingredientsChanged event with the copy of the CURRENT ARRAY
+    this.ingredientsChanged.emit(this.ingredients.slice());
+  }
+
+  constructor() {}
+}
+```
+
+<br><br>
+
+### **Passing Ingredients from Recipes to the Shopping List (via a Service)** <span id="a1002"></span><a href="#top10">&#8593;</a>
+
+<br>
+
+```ts
+// recipe-detail: call event on (click)
+export class RecipeDetailComponent implements OnInit {
+  @Input() recipe: Recipe;
+
+  constructor(private recipeService: RecipeService) {}
+
+  ngOnInit(): void {}
+
+  onAddToShoppingList() {
+    // #1 Pass the ingredients (elements) to RecipeService
+    this.recipeService.addIngredientsToShoppingList(this.recipe.ingredients);
+  }
+}
+```
+
+```ts
+// ...
+export class RecipeService {
+  // ...
+
+  // for reference
+  // private recipes: Recipe[] = [
+  //   new Recipe("...", "...", "...", [
+  //     new Ingredient("Meat", 1),
+  //     new Ingredient("French Fries", 20),
+  //   ]),
+  //   new Recipe("...", "...", "...", [
+  //     new Ingredient("Buns", 2),
+  //     new Ingredient("French Fries", 20),
+  //   ]),
+  // ];
+
+  constructor(private shoppingListService: ShoppingListService) {}
+
+  // ...
+
+  // pass the ingredients (elements) to ShoppingListService
+  addIngredientsToShoppingList(ingredients: Ingredient[]) {
+    this.shoppingListService.addIngredients(ingredients);
+  }
+}
+```
+
+```ts
+// ...
+export class ShoppingListService {
+  ingredientsChanged = new EventEmitter<Ingredient[]>();
+
+  private ingredients: Ingredient[] = [];
+
+  getIngredients() {
+    // return a copy
+    return this.ingredients.slice();
+  }
+
+  addIngredient(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+    this.ingredientsChanged.emit(this.ingredients.slice());
+  }
+
+  addIngredients(ingredients: Ingredient[]) {
+    // first option ( downside: too many events emitted )
+    // for (let ingredient of ingredients) {
+    //   this.addIngredient(ingredient);
+    // }
+
+    // a better option - copying the passed array into the ingredients array using spread operator
+    this.ingredients.push(...ingredients);
+
+    // don't forget to emit that our ingredients changed
+    // meaning: update/replace current array
+    this.ingredientsChanged.emit(this.ingredients.slice());
+  }
+
+  constructor() {}
+}
+```
+
+<br><br>
+
+<hr>
+
+<br><br>

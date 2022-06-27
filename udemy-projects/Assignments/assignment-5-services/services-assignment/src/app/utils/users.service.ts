@@ -12,14 +12,14 @@ export class UsersService {
     this.activeUsers.push(this.inactiveUsers[id]);
     this.inactiveUsers.splice(id, 1);
 
-    this.counter.countActive();
+    this.counter.incrementActive();
   }
 
   setToinActive(id: number) {
     this.inactiveUsers.push(this.activeUsers[id]);
     this.activeUsers.splice(id, 1);
 
-    this.counter.countInactive();
+    this.counter.incrementInactive();
   }
 
   constructor(private counter: CounterService) {}
