@@ -1,0 +1,14 @@
+<div class="row border rounded border-secondary m-2 p-5">
+  <h4 class="text-center"><b>Component B</b></h4>
+  <div class="col-xs-12" *ngFor="let element of elements; let i = index">
+    <ul class="list-group">
+      <li class="list-group-item text-center">
+        <h5>{{ element.name }}</h5>
+        <p>{{ element.content }}</p>
+        <button class="btn btn-secondary" (click)="moveToA(i)">
+          Move to A
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
