@@ -26,6 +26,8 @@
 
 ### <a href="#top10">**Section-10**</a>
 
+### <a href="#top11">**Section-11**</a>
+
 </nav>
 
 <br><br>
@@ -2956,71 +2958,137 @@ export class ShoppingListService {
 
 <br><br>
 
-### **Passing Ingredients from Recipes to the Shopping List (via a Service)** <span id="a1002"></span><a href="#top10">&#8593;</a>
+### **Passing Data from Component A to Component B using services** <span id="a1002"></span><a href="#top10">&#8593;</a>
 
 <br>
 
+Component A/B
+
+```html
+<div class="row border rounded border-primary m-2 p-5">
+  <h4 class="text-center"><b>Component A</b></h4>
+  <div class="col-xs-12" *ngFor="let element of elements; let i = index">
+    <ul class="list-group">
+      <li class="list-group-item text-center">
+        <h5>{{ element.name }}</h5>
+        <p>{{ element.content }}</p>
+        <!-- moveToA inside of component B -->
+        <button class="btn btn-secondary" (click)="moveToB(i)">
+          Move to B
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
+```
+
 ```ts
-// recipe-detail: call event on (click)
-export class RecipeDetailComponent implements OnInit {
-  @Input() recipe: Recipe;
+import { Component, OnInit } from "@angular/core";
+import { DataStorageService } from "../utils/data-storage.service";
+import { ElementItem } from "../utils/element.model";
 
-  constructor(private recipeService: RecipeService) {}
+@Component({
+  selector: "app-cmp-a",
+  templateUrl: "./cmp-a.component.html",
+  styleUrls: ["./cmp-a.component.css"],
+})
+export class CmpAComponent implements OnInit {
+  elements: ElementItem[] = [];
 
-  ngOnInit(): void {}
+  constructor(private dataStorage: DataStorageService) {}
 
-  onAddToShoppingList() {
-    // #1 Pass the ingredients (elements) to RecipeService
-    this.recipeService.addIngredientsToShoppingList(this.recipe.ingredients);
+  ngOnInit(): void {
+    // get elements
+    this.elements = this.dataStorage.getElements();
+
+    // subscribe - listen to changes
+    this.dataStorage.elementsChanged.subscribe(() => {
+      this.elements = this.dataStorage.compAElements;
+    });
+  }
+
+  // moveToA inside of Component B
+  moveToB(id: number) {
+    this.dataStorage.moveToB(id);
   }
 }
 ```
 
+<br><br>
+
+#### DataStorageService
+
 ```ts
-// ...
-export class RecipeService {
-  // ...
+import { EventEmitter, Injectable } from "@angular/core";
+import { ElementItem } from "./element.model";
 
-  // for reference
-  // private recipes: Recipe[] = [
-  //   new Recipe("...", "...", "...", [
-  //     new Ingredient("Meat", 1),
-  //     new Ingredient("French Fries", 20),
-  //   ]),
-  //   new Recipe("...", "...", "...", [
-  //     new Ingredient("Buns", 2),
-  //     new Ingredient("French Fries", 20),
-  //   ]),
-  // ];
+@Injectable({
+  providedIn: "root",
+})
+export class DataStorageService {
+  elementsChanged = new EventEmitter<ElementItem[]>();
 
-  constructor(private shoppingListService: ShoppingListService) {}
+  compAElements: ElementItem[] = [
+    {
+      name: "Book",
+      content: "...",
+    },
+    {
+      name: "Apple",
+      content: "...",
+    },
+  ];
 
-  // ...
+  compBElements: ElementItem[] = [
+    {
+      name: "A bottle of water",
+      content: "...",
+    },
+    {
+      name: "A cup of coffee",
+      content: "...",
+    },
+  ];
 
-  // pass the ingredients (elements) to ShoppingListService
-  addIngredientsToShoppingList(ingredients: Ingredient[]) {
-    this.shoppingListService.addIngredients(ingredients);
+  constructor(private logger: LoggerService) {}
+
+  getElements() {
+    return this.compAElements.slice();
+  }
+
+  moveToA(id: number) {
+    // push from A to B
+    this.compAElements.push(this.compBElements[id]);
+
+    // remove the "moved" element
+    this.compBElements.splice(id, 1);
+
+    // Pass the updated arrays
+    this.elementsChanged.emit(this.compAElements.slice());
+    this.elementsChanged.emit(this.compBElements.slice());
+  }
+
+  moveToB(id: number) {
+    // push from B to A
+    this.compBElements.push(this.compAElements[id]);
+
+    // remove the "moved" element
+    this.compAElements.splice(id, 1);
+
+    // Pass the updated arrays
+    this.elementsChanged.emit(this.compAElements.slice());
+    this.elementsChanged.emit(this.compBElements.slice());
   }
 }
 ```
+
+<br><br>
+
+#### Extra code from the lecture:
 
 ```ts
 // ...
 export class ShoppingListService {
-  ingredientsChanged = new EventEmitter<Ingredient[]>();
-
-  private ingredients: Ingredient[] = [];
-
-  getIngredients() {
-    // return a copy
-    return this.ingredients.slice();
-  }
-
-  addIngredient(ingredient: Ingredient) {
-    this.ingredients.push(ingredient);
-    this.ingredientsChanged.emit(this.ingredients.slice());
-  }
-
   addIngredients(ingredients: Ingredient[]) {
     // first option ( downside: too many events emitted )
     // for (let ingredient of ingredients) {
@@ -3044,3 +3112,875 @@ export class ShoppingListService {
 <hr>
 
 <br><br>
+
+## **Section 11: Changing Pages with Routing** <a href="#nav">&#8593;</a> <span id="top11"></span>
+
+<br><br>
+
+1. <a href="#a1100">Setting up and Loading Routes</a>
+2. <a href="#a1101">Navigating with Router Links</a>
+3. <a href="#a1102">Understanding Navigation Paths</a>
+4. <a href="#a1103">Styling Active Router Links</a>
+5. <a href="#a1104">Navigating Programmatically</a>
+6. <a href="#a1105">Using Relative Paths in Programmatic Navigation</a>
+7. <a href="#a1106">Route Parameters</a>
+8. <a href="#a1107">Query Parameters</a>
+9. <a href="#a1108">Practicing and some Common Gotchas</a>
+10. <a href="#a1109">Setting up Child (Nested) Routes</a>
+
+<br><br>
+
+(Wiki) Routing is the process of selecting a path for traffic in a network or between or across multiple networks.
+
+<br><br>
+
+### **Setting up and Loading Routes** <span id="a1100"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+The Example Project's structure:
+
+- Home
+- Servers
+  - View and Edit Servers
+  - A Service is used to load and update Servers
+- Users
+  - View Users
+
+<br><br>
+
+Adding router to Angular App:
+
+```ts
+// ...
+
+import { RouterModule, Routes } from "@angular/router";
+
+// ...
+
+// #1 create routes
+const appRoutes: Routes = [
+  // path - this is what gets entered in the url after your domain
+  { path: "", component: HomeComponent }, // starting page (localhost:4200)
+
+  // path - localhost:4200/users
+  // component - which component to load when this path gets reached
+  { path: "users", component: UsersComponent },
+
+  { path: "servers", component: ServersComponent },
+];
+
+@NgModule({
+  // ...
+
+  // #2 import RouterModule.forRoot(ROUTES)
+  // forRoot() allows us to register some routes for our main application
+  imports: [RouterModule.forRoot(appRoutes)],
+
+  // ...
+})
+export class AppModule {}
+```
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="#">Servers</a></li>
+        <li role="presentation"><a href="#">Users</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <!-- #3 mark the place where we want the Angular router to load the component of the currently selected route -->
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
+In the end all of the components are loaded behind the scenes, and the Angular router is displaying them conditionally, when user navigates to a certain route/url.
+
+<br>
+
+For reference, this is the AppComponent without routing:
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <li role="presentation" class="active"><a href="#">Home</a></li>
+        <li role="presentation"><a href="#">Servers</a></li>
+        <li role="presentation"><a href="#">Users</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <app-home></app-home>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <app-users></app-users>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <app-servers></app-servers>
+    </div>
+  </div>
+</div>
+```
+
+<br><br>
+
+### **Navigating with Router Links** <span id="a1101"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <!-- #4 add routerLink(s) -->
+        <li role="presentation" class="active"><a routerLink="/">Home</a></li>
+        <li role="presentation"><a routerLink="/servers">Servers</a></li>
+        <li role="presentation"><a routerLink="/users">Users</a></li>
+
+        <!-- alternatives -->
+        <!-- <li role="presentation"><a [routerLink]="'/users'">Users</a></li> -->
+        <!-- <li role="presentation"><a [routerLink]="['/users', 'something']">Users</a></li> -->
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <!-- #3 mark the place where we want the Angular router to load the component of the currently selected route -->
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
+<br>
+
+Routerlink catches the (click) on the element, prevents the default (which would be to send a request), and analises what we passed in the `routerLink` directive (path or array of path elements), and then parses it and checks it finds a fitting route in our configuration (in the `appRoutes`).
+
+<br><br>
+
+### **Understanding Navigation Paths** <span id="a1102"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+```html
+<!-- serversComponent -->
+
+<!-- 
+  relative path - this will append/add it to the current path
+  e.g.: localhost:4200/servers/servers
+-->
+<a routerLink="servers">Reload Page</a>
+<!-- the same thing: -->
+<!-- <a routerLink="./servers">Reload Page</a> -->
+
+<!-- 
+  absolute path - this will go to the /servers
+  e.g.: localhost:4200/servers
+-->
+<a routerLink="/servers">Reload Page</a>
+
+<!-- 
+  go up one level
+  e.g.: localhost:4200, then localhost:4200/servers
+ -->
+<a routerLink="../servers">Reload Page</a>
+```
+
+<br><br>
+
+### **Styling Active Router Links** <span id="a1103"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <ul class="nav nav-tabs">
+        <!-- <li role="presentation" routerLinkActive="myActiveClass"><a routerLink="/">Home</a></li> -->
+        <li
+          role="presentation"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <a routerLink="/">Home</a>
+        </li>
+        <!-- ... -->
+      </ul>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+```
+
+`routerLinkActive` - add this class if it is active (clicked/selected, if you're currently on this route (e.g. localhost:4200/something))
+
+`[routerLinkActiveOptions]="{ exact: true}"` - specify exact options for this router link class (to match the exact path),
+
+meaning only add this `routerLinkActive` CSS class, if the exact full path is (like `routerLink="/"`, `localhost:4200/`), so only if everything is just `"/"`, and not if it is only the part of the path.
+
+<br><br>
+
+### **Navigating Programmatically** <span id="a1104"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+Programmatically routing to a different page:
+
+```ts
+import { Component, OnInit } from "@angular/core";
+import { Router } from "@angular/router";
+
+@Component({
+  selector: "app-home",
+  templateUrl: "./home.component.html",
+  styleUrls: ["./home.component.css"],
+})
+export class HomeComponent implements OnInit {
+  // #1 DI
+  constructor(private router: Router) {}
+
+  ngOnInit() {}
+
+  onLoadServers() {
+    // complex calculation
+
+    // navigate to... [ 'path' ]
+    this.router.navigate(["/servers"]);
+  }
+}
+```
+
+<br><br>
+
+### **Using Relative Paths in Programmatic Navigation** <span id="a1105"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+```ts
+import { Component, OnInit } from "@angular/core";
+import { ActivatedRoute, Router } from "@angular/router";
+import { ServersService } from "./servers.service";
+
+@Component({
+  selector: "app-servers",
+  templateUrl: "./servers.component.html",
+  styleUrls: ["./servers.component.css"],
+})
+export class ServersComponent implements OnInit {
+  public servers: { id: number; name: string; status: string }[] = [];
+
+  constructor(
+    private serversService: ServersService,
+    private router: Router,
+
+    // ActivatedRoute injects the currently active route,
+    // so for the component you just loaded,
+    // this (ActivatedRoute) will be the route which loaded this component
+
+    // and the route is basically a JavaScript object,
+    // which holds a lot of metadata about current route
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.servers = this.serversService.getServers();
+  }
+
+  onReload() {
+    // relativeTo - define relative to which route this link should be loaded,
+    // by default this is always the root domain
+    this.router.navigate(["servers"], { relativeTo: this.route });
+    // so this will navigate to localhost:4200/servers/servers
+  }
+}
+```
+
+<br><br>
+
+### **Route Parameters** <span id="a1106"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+#### **Passing Parameters to Routes**
+
+<br>
+
+```ts
+// AppModule
+
+  // users/:id - the :id part specifies the dynamic path
+  { path: 'users/:id', component: UserComponent },
+```
+
+<br>
+
+#### **Fetching Route Parameters**
+
+<br>
+
+```ts
+// AppModule
+
+  // users/:id - dynamic path
+  { path: 'users/:id/:name', component: UserComponent },
+```
+
+```ts
+// UserComponent
+
+// ...
+
+export class UserComponent implements OnInit {
+  user!: { id: number; name: string };
+
+  // #1 DI - Getting access to currently loaded route
+  // The ActivatedRoute object we injected will give us access to the id passed in the URL => Selected User
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    // load the User
+    this.user = {
+      // id - you only have access to properties you defined in your route parameters ('users/:id')
+      id: this.route.snapshot.params["id"],
+      name: this.route.snapshot.params["name"],
+    };
+  }
+}
+```
+
+```html
+<!-- UserComponent - Template -->
+<p>User with ID {{ user.id }} loaded.</p>
+<p>User name is {{ user.name }}</p>
+```
+
+**Note**: you use `this.route.snapshot` only for initialization
+
+<br>
+
+#### **Fetching Route Parameters Reactively**
+
+<br>
+
+```html
+<a [routerLink]="['/users', 10, 'Anna']">Load Anna (10)</a>
+```
+
+```ts
+import { Component, OnInit } from "@angular/core";
+import { ActivatedRoute, Params } from "@angular/router";
+
+@Component({
+  selector: "app-user",
+  templateUrl: "./user.component.html",
+  styleUrls: ["./user.component.css"],
+})
+export class UserComponent implements OnInit {
+  user!: { id: number; name: string };
+
+  // #1 DI - Getting access to currently loaded route
+  // The ActivatedRoute object we injected will give us access to the id passed in the URL => Selected User
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    // load the User - initialization
+    this.user = {
+      // id - you only have access to properties you defined in your route parameters ('users/:id')
+      id: this.route.snapshot.params["id"],
+      name: this.route.snapshot.params["name"],
+    };
+    // params is an Observable
+    // Observables are a feature which allow you to easily work with Asynchronous tasks
+    // Observable is an easy way to subscribe to an event (listen to changes) which might happen in the future,
+    // to then execute some code when it happens without having to wait for it now
+    // subscribe to params Observable:
+    this.route.params
+      // subscribe takes 3 functions as arguments:
+      // First function will be fired whenever new data is sent through that Observable (whenever the parameters change in this use case)
+      .subscribe(
+        // params (updatedParameters) is an object which holds the parameters you define in the route as properties (e.g. /:id)
+        // (updatedParameters: Params ) => { }
+        (params: Params) => {
+          // update the user object
+          this.user.id = params["id"];
+          this.user.name = params["name"];
+          // this will update our user object whenever the parameter(s) change
+          // so this code won't be executed during initialization, but ONLY when the parameters change
+        }
+      );
+  }
+}
+```
+
+<br>
+
+#### **An Important Note about Route Observables**
+
+<br>
+
+The fact that you don't have to add anything to this component, is because Angular does something for you in the background, which is super important.
+
+Angular cleans up the subscription you set up whenever this component is destroyed, because if it wouldn't do this, you would be subscribing to parameter changes. Let's say you'd then leave this component, and after you come back a new component will be created, but this subscription here will **always** leave on in memory, because it's not closely tied to your component, so when the component is destroyed, the subscription won't. Though it won't be here because Angular handles destroying this subscription for you.
+
+<br>
+
+```ts
+// ...
+
+export class UserComponent implements OnInit, OnDestroy {
+  user!: { id: number; name: string };
+  // Create a new property
+  paramsSubscription!: Subscription;
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.user = {
+      id: this.route.snapshot.params["id"],
+      name: this.route.snapshot.params["name"],
+    };
+    // assign the subscription to this property
+    this.paramsSubscription = this.route.params.subscribe((params: Params) => {
+      this.user.id = params["id"];
+      this.user.name = params["name"];
+    });
+  }
+
+  ngOnDestroy(): void {
+    // during the process of destroying component, unsubscribe
+    this.paramsSubscription.unsubscribe();
+  }
+}
+```
+
+**Note**: You don't have to do this in this case, since Angular will do this for you, but if you add **your own Observables**, you will have to **unsubscribe on your own**.
+
+<br>
+
+<br><br>
+
+### **Query Parameters** <span id="a1107"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+#### **Passing Query Parameters and Fragments**
+
+<br>
+
+There are more things you can add to your url though - Query Parameters, e.g.: `localhost:4200/users/10/Anna?mode=editing&another=something`
+
+You can pass & fetch Query Parameters using Angular `routerLink`s
+
+You might also have `#` Fragment, to jump to a specific place in your App, e.g.: `localhost:4200/users/10/Anna?mode=editing#loading`
+
+<br>
+
+Passing Query Parameters and Fragments with `routerLink` (in the template):
+
+```ts
+// AppModule
+
+const appRoutes: Routes = [
+  // ...
+  { path: "servers", component: ServersComponent },
+  { path: "servers/:id/edit", component: EditServerComponent },
+];
+```
+
+```html
+<div class="row">
+  <div class="col-xs-12 col-sm-4">
+    <div class="list-group">
+      <a
+        [routerLink]="['/servers', 5, 'edit']"
+        [queryParams]="{ allowEdit: '1' }"
+        fragment="loading"
+        href="#"
+        class="list-group-item"
+        *ngFor="let server of servers"
+      >
+        {{ server.name }}
+      </a>
+      <!-- [fragment]="'loading'" -->
+      <!-- fragment="loading" -->
+    </div>
+  </div>
+  <!-- ... -->
+</div>
+```
+
+`queryParams` - bindable property of the routerLink directive
+
+`[queryParams]="{ allowEdit: '1' }"` ( localhost:4200/servers/5/edit?allowEdit=1 )
+
+`fragment="loading"` ( localhost:4200/servers/5/edit?allowEdit=1#fragment )
+
+<br>
+
+#### Passing Query Parameters and Fragments (programmatically)
+
+```html
+<button class="btn btn-secondary" (click)="onLoadServers(1)">
+  Load Server 1
+</button>
+```
+
+```ts
+// ...
+onLoadServers(id: number) {
+  // ...
+  this.router.navigate(
+    ['/servers', id, 'edit'], // localhost:4200/servers/id/edit
+    {
+    queryParams: { allowEdit: '1' }, // localhost:4200/servers/id/edit?allowEdit=1
+    fragment: 'loading', // localhost:4200/servers/id/edit?allowEdit=1#fragment
+    }
+  );
+}
+```
+
+<br>
+
+#### **Retrieving/Fetching Query Parameters and Fragments**
+
+<br>
+
+```ts
+// ...
+export class EditServerComponent implements OnInit {
+  // ...
+  constructor(
+    // DI
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    // retrieve Query Parameters & Fragment
+    console.log(this.route.snapshot.queryParams);
+    console.log(this.route.snapshot.fragment);
+    // note: this might bring the same problem as with Params
+    // meaning this is only ran/updated at the time this component is created
+
+    // the alternative - subscribing to queryParams/fragment
+    // this will allow you to react to queryParams/fragment changes, update them etc.
+    this.route.queryParams.subscribe();
+    this.route.fragment.subscribe();
+    // you do not need to unsubscribe() in this case - Angular will do it for you
+  }
+  // ...
+}
+```
+
+<br><br>
+
+### **Practicing and some Common Gotchas** <span id="a1108"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+**Gotchas in Programming (Wiki)**: In programming, a **gotcha** is a valid construct in a system, program or programming language that works as documented but is counter-intuitive and almost invites mistakes because it is both easy to invoke and unexpected or unreasonable in its outcome.
+
+<br>
+
+```html
+<!-- UsersComponent -->
+<div class="list-group">
+  <!-- dynamically constructing a routerLink -->
+  <a
+    [routerLink]="['/users', user.id, user.name]"
+    href="#"
+    class="list-group-item"
+    *ngFor="let user of users"
+  >
+    {{ user.name }}
+  </a>
+</div>
+```
+
+```html
+<!-- ServersComponent -->
+<div class="list-group">
+  <a
+    [routerLink]="['/servers', server.id]"
+    [queryParams]="{ allowEdit: '1' }"
+    [fragment]="'loading'"
+    fragment="loading"
+    href="#"
+    class="list-group-item"
+    *ngFor="let server of servers"
+  >
+    {{ server.name }}
+  </a>
+</div>
+```
+
+```ts
+// AppModule
+  // load a single server with dynamic id
+  { path: 'servers/:id', component: ServerComponent },
+```
+
+<br>
+
+```ts
+// Fetch a server by id
+// ...
+export class ServerComponent implements OnInit, OnDestroy {
+  server!: { id: number; name: string; status: string };
+  paramsSubscription!: Subscription;
+  // fragmentSubscription!: Params; - optional
+
+  constructor(
+    private serversService: ServersService,
+    // #1 Inject ActivatedRoute
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    const id = +this.route.snapshot.params["id"]; // + means we're converting this value to a number
+    this.server = this.serversService.getServer(id)!;
+
+    this.paramsSubscription = this.route.params.subscribe(
+      (updatedParams: Params) => {
+        this.server = this.serversService.getServer(+updatedParams["id"])!;
+      }
+    );
+    // this.fragmentSubscription = this.route.fragment.subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.paramsSubscription.unsubscribe();
+  }
+}
+```
+
+<br><br>
+
+### **Setting up Child (Nested) Routes** <span id="a1109"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+Adding child-routes:
+
+```ts
+// AppModule
+const appRoutes: Routes = [
+  {
+    path: "servers",
+    component: ServersComponent,
+    // define children of ServersComponent - nest them inside of the 'servers' - parent
+    children: [
+      // load a single server with id of x
+      // remove the parent/ path from the path
+      { path: ":id", component: ServerComponent },
+      { path: ":id/edit", component: EditServerComponent },
+    ],
+  },
+];
+```
+
+Define where to load child routes:
+
+```html
+<!-- ServersComponent -->
+
+<div class="col-xs-12 col-sm-4">
+  <!-- 
+    this adds a new hook which will be used on all child 
+    routes of the route being loaded on the ServersComponent
+    which is /servers route
+
+    all child routes will be loaded in router-outlet
+    -->
+  <router-outlet></router-outlet>
+
+  <!-- 
+  <app-edit-server></app-edit-server>
+  <hr />
+  <app-server></app-server>
+  -->
+</div>
+```
+
+<br><br>
+
+### **Configuring the Handling of Query Parameters** <span id="a1110"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+Preserving the Query Parameters - used to not lose the information you had before:
+
+```ts
+this.router.navigate(["edit"], {
+  relativeTo: this.route,
+  queryParamsHandling: "preserve",
+});
+```
+
+The alternative: `queryParamsHandling: "merge"` - to merge our old Query Parameters with any new you might add.
+
+<br><br>
+
+### **Redirecting and Wildcard Routes** <span id="a1111"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+- Redirecting requests (Redirecting user from a page/path that doesn't exist, 404 Error Handling)
+
+- Setting up a route which handles all routes we don't have
+
+<br>
+
+#### **Redirecting requests**
+
+<br>
+
+`ng g c page-not-found`
+
+```html
+<!-- PageNotFoundComponent -->
+<h3>This page was not found!</h3>
+```
+
+```ts
+// AppModule
+  {
+    path: 'not-found',
+    component: PageNotFoundComponent,
+  },
+
+  {
+    // make sure this is the last route in your setup,
+    // because in another case it'd redirect all requests to /not-found
+    path: '**',
+    redirectTo: '/not-found',
+  },
+```
+
+<br><br>
+
+### **Important: Redirection Path Matching** <span id="a1112"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+In our example, we didn't encounter any issues when we tried to redirect the user. But that's not always the case when adding redirections.
+
+By default, Angular matches paths by prefix. That means, that the following route will match both `/recipes` and just `/`
+
+```ts
+{ path: '', redirectTo: '/somewhere-else' }
+```
+
+Actually, Angular will give you an error here, because that's a common gotcha: This route will now **ALWAYS** redirect you! Why?
+
+Since the default matching strategy is "prefix" , Angular checks if the path you entered in the URL does **start with the path** specified in the route. Of course every path starts with `''` (Important: That's no whitespace, it's simply "nothing").
+
+To fix this behavior, you need to change the matching strategy to `"full"` :
+
+```ts
+{ path: '', redirectTo: '/somewhere-else', pathMatch: 'full' }
+```
+
+Now, you only get redirected, if the full path is `''` (so only if you got NO other content in your path in this example).
+
+<br><br>
+
+### **Outsourcing the Route Configuration** <span id="a1113"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+`Outsourcing` (overwriting a source) - obtain (goods or a service) from an outside or foreign supplier, especially in place of an internal source.
+
+<br>
+
+<br>
+
+Typically if you have more than 2 or 3 routes, you don't add them directly to the `AppModule`, instead you add new file, which is for the application as a whole, typically is called `app-routing.module.ts`
+
+<br>
+
+```ts
+// AppRoutingModule
+
+// ...
+
+// add all your routes here
+const appRoutes: Routes = [
+  { path: "", component: HomeComponent },
+  {
+    path: "users",
+    component: UsersComponent,
+    children: [{ path: ":id/:name", component: UserComponent }],
+  },
+  {
+    path: "servers",
+    component: ServersComponent,
+    children: [
+      { path: ":id", component: ServerComponent },
+      { path: ":id/edit", component: EditServerComponent },
+    ],
+  },
+  {
+    path: "not-found",
+    component: PageNotFoundComponent,
+  },
+  {
+    path: "**",
+    redirectTo: "/not-found",
+  },
+];
+
+@NgModule({
+  // no need for declarations since those components are already declared in the AppModule
+
+  imports: [RouterModule.forRoot(appRoutes)], // forRoot = routes for main app
+
+  // exports enables an Angular module to expose some of its
+  // components/directives/pipes to the other modules in the applications
+  // Without it, the components/directives/pipes defined in a module could only be used in that module.
+  exports: [RouterModule],
+})
+export class AppRoutingModule {}
+```
+
+<br><br>
+
+### **Route Guards / Protecting Routes** <span id="a1113"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+#### **An Introduction to Guards**
+
+<br>
+
+Route Guards - functionality/code which is executed before a route is loaded and once you want to leave a route.
+
+For example you only want to give access to your `ServerComponent` or `EditServerComponent` if a user is logged in. We want to check this before any of our subroutes are accessed.
+
+<br>
+
+#### **Protecting Routes with canActivate**
+
+<br>
+
+to be continued!

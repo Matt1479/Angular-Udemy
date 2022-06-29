@@ -1,0 +1,33 @@
+<div class="row">
+  <div class="col-xs-12 col-sm-4">
+    <div class="list-group">
+      <!-- queryParams - bindable property of the routerLink directive -->
+      <!-- [queryParams]="{ allowEdit: '1' }" ( localhost:4200/servers/5/edit?allowEdit=1 ) -->
+      <!-- fragment="loading" ( localhost:4200/servers/5/edit?allowEdit=1#fragment ) -->
+      <a
+        [routerLink]="['/servers', server.id]"
+        [queryParams]="{ allowEdit: server.id === 3 ? '1' : '0' }"
+        [fragment]="'loading'"
+        fragment="loading"
+        class="list-group-item"
+        *ngFor="let server of servers"
+      >
+        {{ server.name }}
+      </a>
+    </div>
+  </div>
+  <div class="col-xs-12 col-sm-4">
+    <!-- 
+      this adds a new hook which will be used on all child 
+      routes of the route being loaded on the ServersComponent
+      which is /servers route
+
+      all child routes will be loaded in router-outlet
+     -->
+    <router-outlet></router-outlet>
+    <!-- <button class="btn btn-primary" (click)="onReload()">Reload Page</button>
+    <app-edit-server></app-edit-server>
+    <hr />
+    <app-server></app-server> -->
+  </div>
+</div>
