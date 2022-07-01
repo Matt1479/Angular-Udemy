@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute, Data, Params, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
 import { ServersService } from '../servers.service';
@@ -22,19 +22,28 @@ export class ServerComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    const id = +this.route.snapshot.params['id']; // + means we're converting this value to a number
-    this.server = this.serversService.getServer(id)!;
+    // fetch data from resolver
+    this.route.data.subscribe((data: Data) => {
+      // bind the fetched data
+      // the data['server'] index has to match the name
+      // you used when you assigned your resolver
+      // which was: resolve: { server: ServerResolver } (server)
+      this.server = data['server'];
+    });
 
-    this.paramsSubscription = this.route.params.subscribe(
-      (updatedParams: Params) => {
-        this.server = this.serversService.getServer(+updatedParams['id'])!;
-      }
-    );
+    // const id = +this.route.snapshot.params['id']; // + means we're converting this value to a number
+    // this.server = this.serversService.getServer(id)!;
+
+    // this.paramsSubscription = this.route.params.subscribe(
+    //   (updatedParams: Params) => {
+    //     this.server = this.serversService.getServer(+updatedParams['id'])!;
+    //   }
+    // );
     // this.fragmentSubscription = this.route.fragment.subscribe();
   }
 
   ngOnDestroy(): void {
-    this.paramsSubscription.unsubscribe();
+    // this.paramsSubscription.unsubscribe();
   }
 
   onEdit() {
