@@ -28,6 +28,8 @@
 
 ### <a href="#top11">**Section-11**</a>
 
+### <a href="#top12">**Section-12**</a>
+
 </nav>
 
 <br><br>
@@ -4199,7 +4201,7 @@ Let's finish this (fake) `canActivate` behaviour by allowing the user to login:
 ```html
 <!-- HomeComponent -->
 <button class="btn btn-default" (click)="onLogin()">Login</button>
-<button class="btn btn-default" (click)="onLogin()">Logout</button>
+<button class="btn btn-default" (click)="onLogout()">Logout</button>
 ```
 
 ```ts
@@ -4550,3 +4552,30 @@ Now the url looks like this: `localhost:4200/#/users`
 <br><br>
 
 <hr>
+
+<br><br>
+
+## **Section 12: Course Project - Routing** <a href="#nav">&#8593;</a> <span id="top12"></span>
+
+<br><br>
+
+1. <a href="#a1200">sss</a>
+2. <a href="#a1201">sss</a>
+3. <a href="#a1202">sss</a>
+4. <a href="#a1203">sss</a>
+5. <a href="#a1204">sss</a>
+
+<br><br>
+
+### **Routing - Steps** <span id="a1200"></span><a href="#top11">&#8593;</a>
+
+<br>
+
+- Setting Up Routes
+- Adding Navigation to the App (router-outlet)
+- Marking Active Routes
+- Removing href="#"
+- Adding & Configuring Child Routing
+- Route Parameters(Dynamic Links/Parameters): Setting Up, Passing, Fetching
+- Optional: Programmatic Navigation
+- Note about Observables: subscribe, unsubscribe
