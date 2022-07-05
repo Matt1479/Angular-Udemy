@@ -4559,14 +4559,6 @@ Now the url looks like this: `localhost:4200/#/users`
 
 <br><br>
 
-1. <a href="#a1200">sss</a>
-2. <a href="#a1201">sss</a>
-3. <a href="#a1202">sss</a>
-4. <a href="#a1203">sss</a>
-5. <a href="#a1204">sss</a>
-
-<br><br>
-
 ### **Routing - Steps** <span id="a1200"></span><a href="#top11">&#8593;</a>
 
 <br>
