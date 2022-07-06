@@ -30,6 +30,8 @@
 
 ### <a href="#top12">**Section-12**</a>
 
+### <a href="#top13">**Section-13**</a>
+
 </nav>
 
 <br><br>
@@ -4583,15 +4585,13 @@ Now the url looks like this: `localhost:4200/#/users`
 <br><br>
 
 1. <a href="#a1300">Introduction</a>
-2. <a href="#a1301">sss</a>
-3. <a href="#a1302">sss</a>
-4. <a href="#a1303">sss</a>
-5. <a href="#a1304">sss</a>
-6. <a href="#a1305">sss</a>
-7. <a href="#a1306">sss</a>
-8. <a href="#a1307">sss</a>
-9. <a href="#a1308">sss</a>
-10. <a href="#a1309">sss</a>
+2. <a href="#a1301">Install RxJS</a>
+3. <a href="#a1302">Analyzing Angular Observables</a>
+4. <a href="#a1303">Getting Closer to the Core of Observables</a>
+5. <a href="#a1304">Custom Observables(3)</a>
+6. <a href="#a1305">Understanding Operators</a>
+7. <a href="#a1306">Subjects</a>
+8. <a href="#a1307">Useful Resources & Links</a>
 
 <br><br>
 
