@@ -4559,7 +4559,7 @@ Now the url looks like this: `localhost:4200/#/users`
 
 <br><br>
 
-### **Routing - Steps** <span id="a1200"></span><a href="#top11">&#8593;</a>
+### **Routing - Steps** <span id="a1200"></span><a href="#top12">&#8593;</a>
 
 <br>
 
@@ -4571,3 +4571,497 @@ Now the url looks like this: `localhost:4200/#/users`
 - Route Parameters(Dynamic Links/Parameters): Setting Up, Passing, Fetching
 - Optional: Programmatic Navigation
 - Note about Observables: subscribe, unsubscribe
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 13: Observables** <a href="#nav">&#8593;</a> <span id="top13"></span>
+
+<br><br>
+
+1. <a href="#a1300">Introduction</a>
+2. <a href="#a1301">sss</a>
+3. <a href="#a1302">sss</a>
+4. <a href="#a1303">sss</a>
+5. <a href="#a1304">sss</a>
+6. <a href="#a1305">sss</a>
+7. <a href="#a1306">sss</a>
+8. <a href="#a1307">sss</a>
+9. <a href="#a1308">sss</a>
+10. <a href="#a1309">sss</a>
+
+<br><br>
+
+### **Introduction** <span id="a1300"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+Observable - Various Data Sources: (User Input) Events, Http Requests, Triggered in Code, ...
+
+<br>
+
+In an Angular project Observable is an object which we import from a 3rd party package - RxJS.
+
+<br>
+
+Observable follows the Observable pattern: Observable & Observer.
+
+<br>
+
+In between there's an event (e.g. Http request returned data, button click, etc).
+
+<br>
+
+Observer (your code, subscribe function) accepts 3 functions as arguments:
+
+- Handle Data
+- Handle Error
+- Handle Completion
+
+<br>
+
+Observable doesn't have to complete.
+
+<br>
+
+Observables are used for asynchronous tasks.
+
+<br>
+
+<img src="./img/observables.png">
+
+<br><br>
+
+### **Install RxJS** <span id="a1301"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+In order to follow along smoothly with the course examples, make sure you install RxJS v6 by running
+
+`npm install --save rxjs@6`
+
+In addition, also install the rxjs-compat package:
+
+`npm install --save rxjs-compat`
+
+<br><br>
+
+### **Analyzing Angular Observables** <span id="a1302"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+Observables are constructs to which we subscribe to be informed about changes in data.
+
+E.g. `params` observable:
+
+```ts
+this.route.params.subscribe((params: Params) => {
+  this.id = +params["id"];
+});
+```
+
+<br><br>
+
+### **Getting Closer to the Core of Observables** <span id="a1303"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+Creating (almost) custom Observable (RxJS):
+
+```ts
+export class HomeComponent implements OnInit, OnDestroy {
+  private firstObsSubscription!: Subscription;
+
+  constructor() {}
+
+  ngOnInit() {
+    // every second emit a new event
+    this.firstObsSubscription = interval(1000).subscribe((count) => {
+      console.log(count);
+    });
+  }
+
+  ngOnDestroy(): void {
+    // unsubscribe to avoid memory leaks
+    this.firstObsSubscription.unsubscribe();
+  }
+}
+```
+
+**Note**: You don't have to call unsubscribe on Observables provided by Angular (e.g. `params`), Angular does it on it's own.
+
+<br>
+
+<br><br>
+
+### **Custom Observables** <span id="a1304"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+#### **Building a Custom Observable**
+
+```ts
+export class HomeComponent implements OnInit, OnDestroy {
+  private firstObsSubscription!: Subscription;
+
+  constructor() {}
+
+  ngOnInit() {
+    // new approach:
+    const customIntervalObservable = new Observable(
+      // observer - data changes / errors / completion
+      (observer: Observer<number>) => {
+        let count = 0;
+        setInterval(() => {
+          observer.next(count);
+          count++;
+
+          // emit a new value
+          // observer.next();
+
+          // emit errors
+          // observer.error();
+
+          // complete the observable
+          // observer.complete();
+        }, 1000);
+      }
+    );
+
+    // (deprecated)
+    // const customIntervalObservable = Observable.create();
+
+    this.firstObsSubscription = customIntervalObservable.subscribe(
+      (data: number) => {
+        console.log(data);
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    // unsubscribe to avoid memory leaks
+    this.firstObsSubscription.unsubscribe();
+  }
+}
+```
+
+<br><br>
+
+#### **Errors & Completion**
+
+<br>
+
+https://stackoverflow.com/questions/55472124/subscribe-is-deprecated-use-an-observer-instead-of-an-error-callback
+
+<br>
+
+```ts
+export class HomeComponent implements OnInit, OnDestroy {
+  private firstObsSubscription!: Subscription;
+
+  constructor() {}
+
+  ngOnInit() {
+    const customIntervalObservable = new Observable(
+      // observer - data changes / errors / completion
+      (observer: Observer<number>) => {
+        let count = 0;
+        setInterval(() => {
+          observer.next(count);
+
+          if (count === 2) {
+            observer.complete();
+            // complete the observable - no new values
+          }
+
+          if (count > 3) {
+            observer.error(new Error("Count is greater than 3!"));
+            // Observable stops/cancels
+          }
+          count++;
+
+          // emit a new value
+          // observer.next();
+
+          // emit errors
+          // observer.error();
+
+          // complete the observable
+          // observer.complete();
+        }, 1000);
+      }
+    );
+
+    // deprecated:
+    // const customIntervalObservable = Observable.create();
+
+    this.firstObsSubscription = customIntervalObservable.subscribe(
+      (data: number) => {
+        console.log(data);
+        // 1st argument - data changes handler function
+      },
+      (error) => {
+        console.log(error);
+        // 2nd argument - error handler function
+        // error cancels the observables
+      },
+      () => {
+        console.log("Completed!");
+        // 3rd argument - completion handler function
+        // this never gets fired if there're errors
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    // unsubscribe to avoid memory leaks
+    this.firstObsSubscription.unsubscribe();
+  }
+}
+```
+
+<br><br>
+
+#### **Observables & You!**
+
+<br>
+
+Whenever you subscribe and you set up your different handler functions, RxJS merges them all together into one object, and passses that object (observer) to the observable, and inside of that observable it will then interact with the observer, and let the observer know about new data, errors, etc.
+
+<br>
+
+However you very rarely will build your own observables.
+
+<br><br>
+
+### **Understanding Operators** <span id="a1305"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+#### RxJS Library & Operators
+
+You can use RxJS Operators to do various things with data (transform, filter out data, etc.):
+
+<br>
+
+Transforming data with `map() operator`:
+
+```ts
+this.firstObsSubscription = customIntervalObservable
+  .pipe(
+    map((data: number) => {
+      // transform data
+      return "Round: " + (data + 1);
+    })
+  )
+  // old (deprecated) subscribe args
+  .subscribe(
+    (data) => {
+      console.log(data);
+      // 1st argument - data changes handler function
+    },
+    (error) => {
+      console.log(error);
+      // 2nd argument - error handler function
+      // error cancels the observables
+    },
+    () => {
+      console.log("Completed!");
+      // 3rd argument - completion handler function
+      // this never gets fired if there're errors
+    }
+  );
+
+this.firstObsSubscription = customIntervalObservable
+  // pipe takes operators as arguments (as many as you need)
+  .pipe(
+    // transform data with map() method
+    map((data: number) => {
+      return "Round: " + (data + 1);
+    })
+  )
+  // new subscribe args - an observer object with 3 properties - next, error, complete
+  .subscribe({
+    next: (data) => {
+      console.log(data);
+    },
+    error: (error) => {
+      console.log(error);
+    },
+    complete: () => {
+      console.log("Completed!");
+    },
+  });
+```
+
+<br>
+
+Adding a filter() method:
+
+```ts
+this.firstObsSubscription = customIntervalObservable
+  .pipe(
+    // filter out data
+    filter((data: any): any => {
+      // return boolean
+      return data > 0;
+      // return every value but the first one
+    }),
+    map((data: number) => {
+      // transform data
+      return "Round: " + (data + 1);
+    })
+  )
+  .subscribe({
+    next: (data) => {
+      console.log(data);
+    },
+    error: (error) => {
+      console.log(error);
+    },
+    complete: () => {
+      console.log("Completed!");
+    },
+  });
+```
+
+<br>
+
+https://www.learnrxjs.io/learn-rxjs/operators
+
+<br><br>
+
+### **Subjects** <span id="a1306"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+Think of `Subjects` as of `EventEmitters`.
+
+<br>
+
+Old approach with `EventEmitter`:
+
+```ts
+// UserService
+activatedEmitter = new EventEmitter<boolean>();
+```
+
+```html
+<!-- UserComponent -->
+<button class="btn btn-primary" (click)="onActivate()">Activate</button>
+```
+
+```ts
+// UserComponent
+onActivate() {
+  this.userService.activatedEmitter.emit(true);
+}
+```
+
+<br>
+
+```html
+<!-- AppComponent -->
+<p *ngIf="userActivated">Activated</p>
+```
+
+```ts
+userActivated = false;
+
+constructor(private userService: UserService) {}
+
+ngOnInit() {
+  this.userService.activatedEmitter.subscribe((didActivate) => {
+    this.userActivated = didActivate;
+  });
+}
+```
+
+<br>
+
+New/Recommended/Better approach - using a `Subject`. We use it very similar when compared to EventEmitter:
+
+```ts
+// UserService
+activatedEmitter = new Subject<boolean>();
+```
+
+```ts
+onActivate() {
+  this.userService.activatedEmitter.next(true);
+}
+```
+
+A `Subject` is a special kind of observable. It is an object which you can subscribe to (just as an observer), but it's more active, since you can actively call it (`next()`) from outside.
+
+We called `next()` inside of the observable, here we can call `next()` outside of it (using a subject).
+
+<img src="./img/subject.png">
+
+<br>
+
+(nothing changes in the AppComponent):
+
+```ts
+  ngOnInit() {
+    this.userService.activatedEmitter.subscribe((didActivate) => {
+      this.userActivated = didActivate;
+    });
+  }
+```
+
+<br>
+
+Don't use EventEmitter, use `Subjects`.
+
+<br>
+
+You have to call unsubscribe on `Subjects`:
+
+```ts
+userActivated = false;
+private activatedSubscription!: Subscription;
+
+constructor(private userService: UserService) {}
+
+ngOnInit() {
+  this.activatedSubscription = this.userService.activatedEmitter.subscribe((didActivate) => {
+    this.userActivated = didActivate;
+  });
+}
+
+ngOnDestroy(): void {
+  this.activatedSubscription.unsubscribe();
+}
+```
+
+**Note** about `Subjects` as a replacement for `EventEmitter`s: This only counts if you're using as cross-component event emitters (don't use it with `@Output()`), instead use Angular's Event Emitter - `@Output()`.
+
+ONLY use Subjects to communicate between components through services (where in the end you subscribe to something).
+
+<br>
+
+if you're not subscribing to an EventEmitter - `Output()`
+
+<br>
+
+if you subscribe manually - `Subject`
+
+<br><br>
+
+### **Useful Resources & Links** <span id="a1307"></span><a href="#top13">&#8593;</a>
+
+<br>
+
+Official Docs: https://rxjs-dev.firebaseapp.com/
+
+RxJS Series: https://academind.com/learn/javascript/understanding-rxjs/
+
+Updating to RxJS 6: https://academind.com/learn/javascript/rxjs-6-what-changed/
+
+<br><br>
+
+<hr>
