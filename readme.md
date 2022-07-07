@@ -5131,3 +5131,490 @@ EventEmitter --> Subject (cross-component communication using a service)
 <br><br>
 
 <hr>
+
+<br><br>
+
+## **Section 15: Handling Forms in Angular Apps** <a href="#nav">&#8593;</a> <span id="top15"></span>
+
+<br><br>
+
+1. <a href="#a1500">Template-Driven (TD) vs Reactive Approach</a>
+2. <a href="#a1501">TD: Creating the Form and Registering the Controls</a>
+3. <a href="#a1502">TD: Submitting and Using the Form</a>
+4. <a href="#a1503">TD: Understanding Form State</a>
+5. <a href="#a1504">TD: Accessing the Form with @ViewChild</a>
+6. <a href="#a1505">TD: Validation</a>
+7. <a href="#a1506">TD: Set Default Values with ngModel Property Binding</a>
+8. <a href="#a1507">TD: Using ngModel with Two-Way-Binding</a>
+9. <a href="#a1508">TD: Grouping Form Controls</a>
+10. <a href="#a1509">TD: Handling Radio Buttons</a>
+11. <a href="#a1510">TD: Setting and Patching Form Values</a>
+12. <a href="#`a1511`">TD: Using Form Data</a>
+13. <a href="#a1512">TD: Resetting Forms</a>
+
+<br><br>
+
+### **Template-Driven (TD) vs Reactive Approach** <span id="a1500"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+#### Two Approaches:
+
+- **Template-Driven**
+  - Angular infers the Form Object from the DOM
+- **Reactive**
+  - Form is created programmatically and synchronized with the DOM
+
+<br><br>
+
+### **TD: Creating the Form and Registering the Controls** <span id="a1501"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Import `FormsModule`: `imports: [FormsModule]` (AppModule)
+
+<br>
+
+Angular creates a object representation based on the template (form) in the DOM. By default it does not register controls inside of it.
+
+<br>
+
+Add a control (input) to object representation of a form:
+
+```html
+<input type="text" id="username" class="form-control" ngModel name="username" />
+```
+
+`ngModel` - Angular's FormsModule directive
+
+<br>
+
+`name="username"` - (`ngModel`) control name
+
+<br>
+
+Now that we registered those controls/inputs, let's retrieve the data.
+
+<br><br>
+
+### **TD: Submitting and Using the Form** <span id="a1502"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```html
+<!-- Get the submit event: -->
+(ngSubmit)="onSubmit(f)"
+
+<!-- place a local reference -->
+#f
+
+<!-- get access to JavaScript form object created by Angular -->
+#f="ngForm"
+
+<!-- so it will look like this: -->
+<form (ngSubmit)="onSubmit(f)" #f="ngForm">...</form>
+```
+
+```ts
+// fetch the object
+onSubmit(form: NgForm) {
+  console.log(form);
+
+  // or just the values
+  console.log(form.value);
+}
+```
+
+<br><br>
+
+### **TD: Understanding Form State** <span id="a1503"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+NgForm
+
+`controls`: (...) - Your registered controls (Object, more info compared to `value`)
+
+`dirty`: (...) - values changed? (true/false)
+
+`disabled`: (...) - is form disabled? (true/false)
+
+`formDirective`: (...) - `NgForm`
+
+`invalid`: (...) - form validation - is form valid? (true/false)
+
+`touched`: (...) - was any field clicked? (true/false)
+
+`valid`: (...) - is the form valid? (true/false)
+
+`value`: (...) - controls' values (Object)
+
+<br><br>
+
+### **TD: Accessing the Form with @ViewChild** <span id="a1504"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+A different approach of accessing the Form:
+
+```html
+<form (ngSubmit)="onSubmit()" #f="ngForm">
+  ...
+  <form></form>
+</form>
+```
+
+```ts
+onSubmit() {
+  console.log(this.signupForm);
+}
+```
+
+With this you can access the Form even before you submit it.
+
+<br><br>
+
+### **TD: Validation** <span id="a1505"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+#### **TD: Adding Validation to check User Input**
+
+```html
+<!-- control: required -->
+<input
+  type="text"
+  id="username"
+  class="form-control"
+  ngModel
+  name="username"
+  required
+/>
+
+<!-- ... -->
+
+<!-- control: required & valid email -->
+<input
+  type="email"
+  id="email"
+  class="form-control"
+  ngModel
+  name="email"
+  required
+  email
+/>
+```
+
+<br><br>
+
+#### **Built-in Validators & Using HTML5 Validation**
+
+<br>
+
+Which Validators do ship with Angular?
+
+Check out the Validators class: https://angular.io/api/forms/Validators - these are all built-in validators, though that are the methods which actually get executed (and which you later can add when using the reactive approach).
+
+For the template-driven approach, you need the directives. You can find out their names, by searching for "validator" in the official docs: https://angular.io/api?type=directive - everything marked with "D" is a directive and can be added to your template.
+
+Additionally, you might also want to enable HTML5 validation (by default, Angular disables it). You can do so by adding the `ngNativeValidate` to a control in your template.
+
+<br><br>
+
+#### **TD: Using the Form State**
+
+<br>
+
+Disable submit button if the form is not valid:
+
+```html
+<button class="btn btn-primary" type="submit" [disabled]="!f.valid">
+  Submit
+</button>
+```
+
+Add red border if the control is touched & is invalid (empty/invalid email, etc):
+
+```css
+/* CSS */
+input.ng-invalid.ng-touched {
+  border: 1px solid red;
+}
+```
+
+<br><br>
+
+#### **TD: Outputting Validation Error Messages**
+
+<br>
+
+```html
+<div class="form-group">
+  <label for="username">Username</label>
+  <input
+    type="text"
+    id="username"
+    class="form-control"
+    ngModel
+    name="username"
+    required
+    #username="ngModel"
+  />
+  <span class="help-block" *ngIf="!username.valid && username.touched">
+    Username can't be empty!
+  </span>
+</div>
+```
+
+`#username="ngModel"` - access the Form Control (Object/data): add a local reference to control, and associate it with `ngModel`
+
+<br><br>
+
+### **TD: Set Default Values with ngModel Property Binding** <span id="a1506"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Setting default value with (one-way-binding) property binding:
+
+<br>
+
+```html
+<select
+  [ngModel]="defaultQuestion"
+  name="secret"
+  id="secret"
+  class="form-control"
+>
+  <option value="pet">Your first Pet?</option>
+  <option value="teacher">Your first teacher?</option>
+</select>
+```
+
+```ts
+defaultQuestion = "pet";
+```
+
+The default (selected) option will now be `pet`.
+
+<br><br>
+
+### **TD: Using ngModel with Two-Way-Binding** <span id="a1507"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Using two-way-binding to instantly react to changes (here output some data):
+
+```html
+<div class="form-group">
+  <textarea
+    name="questionAnswer"
+    rows="3"
+    class="form-control"
+    [(ngModel)]="answer"
+  ></textarea>
+</div>
+```
+
+```ts
+answer = "";
+```
+
+<br><br>
+
+### **TD: Grouping Form Controls** <span id="a1508"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Grouping Form Controls:
+
+```html
+<div id="user-data" ngModelGroup="userData">
+  <!-- username input -->
+
+  <!-- ... -->
+
+  <!-- email input -->
+</div>
+```
+
+```ts
+// (log)
+NgForm {
+  value: Object {
+    otherControl: '...',
+    userData {
+      username: '...',
+      email: '...'
+    }
+  }
+}
+```
+
+Grouping From Controls & Getting Access to JavaScript Object:
+
+```html
+<div id="user-data" ngModelGroup="userData" #userData="ngModelGroup">...</div>
+```
+
+Grouping From Controls & Getting Access to JavaScript Object & Outputting a message if the whole group is invalid:
+
+```html
+<div id="user-data" ngModelGroup="userData" #userData="ngModelGroup">...</div>
+<p *ngIf="!userData.valid && userData.touched">User Data is invalid!</p>
+```
+
+<br><br>
+
+### **TD: Handling Radio Buttons** <span id="a1509"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```html
+<div class="radio" *ngFor="let gender of genders">
+  <label>
+    <input type="radio" name="gender" ngModel [value]="gender" required />
+    {{ gender }}
+  </label>
+</div>
+```
+
+```ts
+genders = ["male", "female"];
+```
+
+<br><br>
+
+### **TD: Setting and Patching Form Values** <span id="a1510"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```html
+<button class="btn btn-default" type="button" (click)="suggestUserName()">
+  Suggest an Username
+</button>
+```
+
+<br>
+
+Setting value of all controls:
+
+```ts
+@ViewChild('f') signupForm!: NgForm;
+
+suggestUserName() {
+  const suggestedName = 'Superuser';
+  this.signupForm.setValue({
+    userData: {
+      username: suggestedName,
+      email: '',
+    },
+    secret: 'pet',
+    questionAnswer: '',
+    gender: 'male',
+  });
+}
+```
+
+Note: You have to pass exact copy of that form (all controls/properties), and assign values to each control.
+
+The downside is that you can overwrite user's input.
+
+<br>
+
+Setting values of a specific control(s):
+
+```ts
+this.signupForm.form.patchValue({
+  userData: {
+    username: suggestedName,
+  },
+});
+```
+
+`setValue()` - set values of the whole form
+
+`patchValue()` - overwrite parts of the form
+
+<br><br>
+
+### **TD: Using Form Data** <span id="a1511"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```html
+<div class="row" *ngIf="submitted">
+  <div class="col-xs-12">
+    <h3>Your Data</h3>
+    <p>Username: {{ user.username }}</p>
+    <p>Mail: {{ user.email }}</p>
+    <p>Secret Question: {{ user.secretQuestion }}</p>
+    <p>Answer: {{ user.answer }}</p>
+    <p>Gender: {{ user.gender }}</p>
+  </div>
+</div>
+```
+
+```ts
+@ViewChild('f') signupForm!: NgForm;
+// ...
+
+user = {
+  username: '',
+  email: '',
+  secretQuestion: '',
+  answer: '',
+  gender: '',
+};
+submitted = false;
+
+// ...
+
+
+onSubmit() {
+  this.submitted = true;
+
+  console.log(this.signupForm);
+
+  // this.user.username = this.signupForm.value.userData.username;
+  // this.user.email = this.signupForm.value.userData.email;
+  // this.user.secretQuestion = this.signupForm.value.secret;
+  // this.user.answer = this.signupForm.value.questionAnswer;
+  // this.user.gender = this.signupForm.value.gender;
+
+  // alternative
+  this.user = {
+    username: this.signupForm.value.userData.username,
+    email: this.signupForm.value.userData.email,
+    secretQuestion: this.signupForm.value.secret,
+    answer: this.signupForm.value.questionAnswer,
+    gender: this.signupForm.value.gender,
+  };
+}
+```
+
+<br><br>
+
+### **TD: Resetting Forms** <span id="a1512"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```ts
+onSubmit() {
+  this.submitted = true;
+
+  this.user = {
+    username: this.signupForm.value.userData.username,
+    email: this.signupForm.value.userData.email,
+    secretQuestion: this.signupForm.value.secret,
+    answer: this.signupForm.value.questionAnswer,
+    gender: this.signupForm.value.gender,
+  };
+
+  // after submitting, reset
+  this.signupForm.reset();
+}
+```
+
+You can pass the same object as in setValue() to reset() which will then reset the form to specific values.
+
+<br>
