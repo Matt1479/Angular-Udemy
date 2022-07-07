@@ -6,31 +6,33 @@
 
 ## Navigation <span id="nav"></span>
 
-### <a href="#top01">**Section-01**</a>
+### <a href="#top01">**Section 01: Getting Started**</a>
 
-### <a href="#top02">**Section-02**</a>
+### <a href="#top02">**Section 02: The basics**</a>
 
-### <a href="#top03">**Section-03**</a>
+### <a href="#top03">**Section 03: The Course Project - The Basics**</a>
 
-### <a href="#top04">**Section-04**</a>
+### <a href="#top04">**Section 04: Debugging**</a>
 
-### <a href="#top05">**Section-05**</a>
+### <a href="#top05">**Section 05: Components & Databinding Deep Dive**</a>
 
-### <a href="#top06">**Section-06**</a>
+### <a href="#top06">**Section 06: Course Project - Components & Databinding**</a>
 
-### <a href="#top07">**Section-07**</a>
+### <a href="#top07">**Section 07: Directives Deep Dive**</a>
 
-### <a href="#top08">**Section-08**</a>
+### <a href="#top08">**Section 08: Course Project - Directives**</a>
 
-### <a href="#top09">**Section-09**</a>
+### <a href="#top09">**Section 09: Using Services & Dependency Injection**</a>
 
-### <a href="#top10">**Section-10**</a>
+### <a href="#top10">**Section 10: Course Project - Services & Dependency Injection**</a>
 
-### <a href="#top11">**Section-11**</a>
+### <a href="#top11">**Section 11: Changing Pages with Routing**</a>
 
-### <a href="#top12">**Section-12**</a>
+### <a href="#top12">**Section 12: Course Project - Routing**</a>
 
-### <a href="#top13">**Section-13**</a>
+### <a href="#top13">**Section 13: Observables**</a>
+
+### <a href="#top14">**Section-14: Course Project - Observables**</a>
 
 </nav>
 
@@ -5038,7 +5040,7 @@ ngOnDestroy(): void {
 }
 ```
 
-**Note** about `Subjects` as a replacement for `EventEmitter`s: This only counts if you're using as cross-component event emitters (don't use it with `@Output()`), instead use Angular's Event Emitter - `@Output()`.
+**Note** about `Subjects` as a replacement for `EventEmitter`s: This only counts if you're using it as cross-component event emitters (don't use it with `@Output()`), instead use Angular's Event Emitter - `@Output()`.
 
 ONLY use Subjects to communicate between components through services (where in the end you subscribe to something).
 
@@ -5061,6 +5063,70 @@ Official Docs: https://rxjs-dev.firebaseapp.com/
 RxJS Series: https://academind.com/learn/javascript/understanding-rxjs/
 
 Updating to RxJS 6: https://academind.com/learn/javascript/rxjs-6-what-changed/
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 14: Course Project - Observables** <a href="#nav">&#8593;</a> <span id="top14"></span>
+
+<br>
+
+EventEmitter --> Subject (cross-component communication using a service)
+
+(emit --> next)
+
+```ts
+  ingredientsChanged = new EventEmitter<Ingredient[]>();
+
+  // private ingredients: Ingredient[] = [
+  //   new Ingredient('Apples', 5),
+  //   new Ingredient('Tomatoes', 10),
+  // ];
+
+  // getIngredients() {
+  //   return this.ingredients.slice();
+  // }
+
+  addIngredient(ingredient: Ingredient) {
+    // this.ingredients.push(ingredient);
+    this.ingredientsChanged.emit(this.ingredients.slice());
+  }
+
+  addIngredients(ingredients: Ingredient[]) {
+
+    // this.ingredients.push(...ingredients);
+
+    this.ingredientsChanged.emit(this.ingredients.slice());
+  }
+```
+
+```ts
+  ingredientsChanged = new Subject<Ingredient[]>();
+
+  // private ingredients: Ingredient[] = [
+  //   new Ingredient('Apples', 5),
+  //   new Ingredient('Tomatoes', 10),
+  // ];
+
+  // getIngredients() {
+  //   return this.ingredients.slice();
+  // }
+
+  addIngredient(ingredient: Ingredient) {
+    // this.ingredients.push(ingredient);
+    this.ingredientsChanged.next(this.ingredients.slice());
+  }
+
+  addIngredients(ingredients: Ingredient[]) {
+
+    // this.ingredients.push(...ingredients);
+
+    this.ingredientsChanged.next(this.ingredients.slice());
+  }
+```
 
 <br><br>
 
