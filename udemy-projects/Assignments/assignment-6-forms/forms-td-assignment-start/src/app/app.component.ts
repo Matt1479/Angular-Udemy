@@ -9,6 +9,9 @@ import { NgForm } from '@angular/forms';
 export class AppComponent {
   @ViewChild('form') f!: NgForm;
 
+  subscriptions = ['Basic', 'Advanced', 'Pro'];
+  defaultSelectedSubscription = 'Advanced';
+
   formObject = {
     email: '',
     subscription: '',
