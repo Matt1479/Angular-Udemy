@@ -5138,6 +5138,10 @@ EventEmitter --> Subject (cross-component communication using a service)
 
 <br><br>
 
+> ### **Part (1/2)** - Template Driven Approach (TD)
+
+<br><br>
+
 1. <a href="#a1500">Template-Driven (TD) vs Reactive Approach</a>
 2. <a href="#a1501">TD: Creating the Form and Registering the Controls</a>
 3. <a href="#a1502">TD: Submitting and Using the Form</a>
@@ -5149,8 +5153,10 @@ EventEmitter --> Subject (cross-component communication using a service)
 9. <a href="#a1508">TD: Grouping Form Controls</a>
 10. <a href="#a1509">TD: Handling Radio Buttons</a>
 11. <a href="#a1510">TD: Setting and Patching Form Values</a>
-12. <a href="#`a1511`">TD: Using Form Data</a>
+12. <a href="#a1511">TD: Using Form Data</a>
 13. <a href="#a1512">TD: Resetting Forms</a>
+
+<hr>
 
 <br><br>
 
@@ -5235,7 +5241,7 @@ NgForm
 
 `controls`: (...) - Your registered controls (Object, more info compared to `value`)
 
-`dirty`: (...) - values changed? (true/false)
+`dirty`: (...) - (any controls') values changed? (true/false)
 
 `disabled`: (...) - is form disabled? (true/false)
 
@@ -5258,15 +5264,15 @@ NgForm
 A different approach of accessing the Form:
 
 ```html
-<form (ngSubmit)="onSubmit()" #f="ngForm">
-  ...
-  <form></form>
-</form>
+<form (ngSubmit)="onSubmit()" #f="ngForm">...</form>
 ```
 
 ```ts
+@ViewChild('f') form!: NgForm;
+
+// ...
 onSubmit() {
-  console.log(this.signupForm);
+  console.log(this.form);
 }
 ```
 
@@ -5610,10 +5616,14 @@ onSubmit() {
     gender: this.signupForm.value.gender,
   };
 
-  // after submitting, reset
+  // after submitting, reset the form
   this.signupForm.reset();
 }
 ```
+
+This will not only reset the values, but also the form state (touched, dirty, etc).
+
+<br>
 
 You can pass the same object as in setValue() to reset() which will then reset the form to specific values.
 
