@@ -5177,12 +5177,7 @@ EventEmitter --> Subject (cross-component communication using a service)
 9. <a href="#a1521">Reactive: Using Error Codes</a>
 10. <a href="#a1522">Reactive: Creating a Custom Async Validator</a>
 11. <a href="#a1523">Reactive: Reacting to Status or Value Changes</a>
-<<<<<<< HEAD
 12. <a href="#a1524">Reactive: Setting and Patching Values</a>
-=======
-12. <a href="#a1524">sss</a>
-13. <a href="#a1525">sss</a>
->>>>>>> 4312ca09b53030a99816331ff78447bbd7450e6b
 
 <br><br>
 
