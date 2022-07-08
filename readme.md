@@ -34,6 +34,8 @@
 
 ### <a href="#top14">**Section-14: Course Project - Observables**</a>
 
+### <a href="#top15">**Section-15: Handing Forms in Angular Apps**</a>
+
 </nav>
 
 <br><br>
@@ -5160,6 +5162,25 @@ EventEmitter --> Subject (cross-component communication using a service)
 
 <br><br>
 
+> ### **Part (2/2)** - Reactive Approach
+
+<br><br>
+
+1. <a href="#a1513">Reactive: Setup</a>
+2. <a href="#a1514">Reactive: Creating a Form in Code</a>
+3. <a href="#a1515">Reactive: Syncing HTML and Form</a>
+4. <a href="#a1516">Reactive: Submitting the Form</a>
+5. <a href="#a1517">Reactive: Adding Validation</a>
+6. <a href="#a1518">Reactive: (Validation) Getting Access to Controls</a>
+7. <a href="#a1519">Fixing a Bug</a>
+8. <a href="#a1520">Reactive: Creating Custom Validators</a>
+9. <a href="#a1521">Reactive: Using Error Codes</a>
+10. <a href="#a1522">Reactive: Creating a Custom Async Validator</a>
+11. <a href="#a1523">Reactive: Reacting to Status or Value Changes</a>
+12. <a href="#a1524">Reactive: Setting and Patching Values</a>
+
+<br><br>
+
 ### **Template-Driven (TD) vs Reactive Approach** <span id="a1500"></span><a href="#top15">&#8593;</a>
 
 <br>
@@ -5626,5 +5647,638 @@ This will not only reset the values, but also the form state (touched, dirty, et
 <br>
 
 You can pass the same object as in setValue() to reset() which will then reset the form to specific values.
+
+<br>
+
+<hr>
+
+<br>
+
+### **Reactive: Setup** <span id="a1513"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Note: You don't need the `FormsModule` (imports[]), it is only used for Template-Driven approach.
+
+<br>
+
+Instead import `ReactiveFormsModule`: `imports: [ReactiveFormsModule]`.
+
+<br>
+
+`ReactiveFormsModule` has all the tools to build our form & connect to the template.
+
+<br><br>
+
+### **Reactive: Creating a Form in Code** <span id="a1514"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```ts
+// ...
+export class AppComponent implements OnInit {
+  genders = ["male", "female"];
+  // declare the form
+  signupForm!: FormGroup;
+
+  // initialize the form before the template is rendered
+  ngOnInit(): void {
+    this.signupForm = new FormGroup({
+      username: new FormControl(null),
+      email: new FormControl(null),
+      gender: new FormControl("male"),
+    });
+  }
+}
+```
+
+<br>
+
+`gender: new FormControl('male')` sets the default gender to male
+
+<br>
+
+Arguments you can pass to `FormControl()` class:
+
+- 1st argument: initial state/value of this control
+- 2nd argument: single validator or array of validators (to be applied to this control)
+- 3rd argument: potential Asynchronous validators
+
+<br><br>
+
+### **Reactive: Syncing HTML and Form** <span id="a1515"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Overwriting the default behaviour - instead of creating form object from the template, create the reactive way:
+
+```html
+<!-- the same property name as in TS code (FormGroup) -->
+<form [formGroup]="signupForm">...</form>
+```
+
+Now the form is synchronized with the form created in TypeScript, but that simply isn't enough, we have to also register the controls.
+
+<br>
+
+Connect properties (TS) to controls/inputs (in the Template):
+
+```ts
+// username: new FormControl(null) - the property in TypeScript code
+
+formControlName = "username"; // <-- directive on an input element in the Template
+```
+
+```html
+<div class="form-group">
+  <label for="username">Username</label>
+  <input
+    type="text"
+    id="username"
+    class="form-control"
+    formControlName="username"
+  />
+</div>
+```
+
+<br><br>
+
+### **Reactive: Submitting the Form** <span id="a1516"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Bind the form to `(ngSubmit)` event:
+
+```html
+<form [formGroup]="signupForm" (ngSubmit)="onSubmit()">...</form>
+```
+
+The difference between TD and Reactive, is that you don't pass the local reference.
+
+Instead you do it in the TypeScript code:
+
+<br>
+
+```ts
+onSubmit() {
+  console.log(this.signupForm);
+}
+```
+
+<br><br>
+
+### **Reactive: Adding Validation** <span id="a1517"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```ts
+ngOnInit(): void {
+  this.signupForm = new FormGroup({
+    // add/pass a single validator
+    username: new FormControl(null, Validators.required),
+
+    // add/pass an array of validators
+    email: new FormControl(null, [Validators.required, Validators.email]),
+    gender: new FormControl('male'),
+  });
+}
+```
+
+<br><br>
+
+### **Reactive: (Validation) Getting Access to Controls** <span id="a1518"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+Outputting Validation Error Messages (for each control):
+
+```html
+<span
+  *ngIf="
+    !signupForm.get('username')?.valid
+    &&
+    (
+      signupForm.get('username')?.touched
+      ||
+      signupForm.get('username')?.dirty
+    )
+    "
+  class="help-block"
+>
+  Username can't be empty!
+</span>
+```
+
+<br>
+
+use `.get()` method to access form controls
+
+<br>
+
+`form.get()` - with get() method you select either a control/element or a path to a control/element (if it is a nested property).
+
+<br>
+
+Outputting Validation Error Messages for the whole form:
+
+```html
+<span
+  class="help-block"
+  *ngIf="!signupForm.valid && (signupForm.touched || signupForm.dirty)"
+>
+  Please enter valid data!
+</span>
+```
+
+<br>
+
+You can also add styling to error messages:
+
+```css
+input.ng-invalid.ng-touched {
+  border: 1px solid red;
+}
+```
+
+In case if you have a nested form, you need to specify the path when selecting/getting access to an element/control.
+
+Specifying a path to a control/element using the `.get()` method:
+
+```ts
+ngOnInit(): void {
+  this.signupForm = new FormGroup({
+    // create a nested form group
+    userData: new FormGroup({
+      username: new FormControl(null, Validators.required),
+      email: new FormControl(null, [Validators.required, Validators.email]),
+    }),
+    gender: new FormControl('male'),
+  });
+}
+```
+
+You need to wrap the controls inside of a HTMLElement with a `formGroupName` directive, with the name which is synchronized with your FormGroup inside of your TypeScript code (`formGroupName="userData"`):
+
+```html
+<div formGroupName="userData">
+  <!-- ... (controls) -->
+</div>
+```
+
+As mentioned before, we have to specify the exact path to a control inside of the `.get()` method(`signupForm.get('userdata.username')`):
+
+```html
+<div class="form-group">
+  <label for="username">Username</label>
+  <input
+    type="text"
+    id="username"
+    class="form-control"
+    formControlName="username"
+  />
+  <span
+    *ngIf="
+      !signupForm.get('userdata.username')?.valid &&
+      (signupForm.get('userdata.username')?.touched ||
+        signupForm.get('userdata.username')?.dirty)
+    "
+    class="help-block"
+  >
+    Username can't be empty!
+  </span>
+</div>
+```
+
+<br>
+
+The whole code until now:
+
+```html
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+        <div formGroupName="userData">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              class="form-control"
+              formControlName="username"
+            />
+            <span
+              *ngIf="
+                !signupForm.get('userdata.username')?.valid &&
+                (signupForm.get('userdata.username')?.touched ||
+                  signupForm.get('userdata.username')?.dirty)
+              "
+              class="help-block"
+            >
+              Username can't be empty!
+            </span>
+          </div>
+          <div class="form-group">
+            <label for="email">email</label>
+            <input
+              type="text"
+              id="email"
+              class="form-control"
+              formControlName="email"
+            />
+            <span
+              class="help-block"
+              *ngIf="
+                !signupForm.get('userdata.email')?.valid &&
+                (signupForm.get('userdata.email')?.touched ||
+                  signupForm.get('userdata.email')?.dirty)
+              "
+            >
+              Please enter a valid Email!
+            </span>
+          </div>
+        </div>
+        <div class="radio" *ngFor="let gender of genders">
+          <label>
+            <input type="radio" [value]="gender" formControlName="gender" />{{
+            gender }}
+          </label>
+        </div>
+        <span
+          class="help-block"
+          *ngIf="!signupForm.valid && (signupForm.touched || signupForm.dirty)"
+        >
+          Please enter valid data!
+        </span>
+        <button
+          class="btn btn-primary"
+          type="submit"
+          [disabled]="!signupForm.valid"
+        >
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+```
+
+```ts
+import { Component, OnInit } from "@angular/core";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
+
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent implements OnInit {
+  genders = ["male", "female"];
+  // declare the form
+  signupForm!: FormGroup;
+
+  // initialize the form before the template is rendered
+  ngOnInit(): void {
+    this.signupForm = new FormGroup({
+      // create a nested form group
+      userData: new FormGroup({
+        username: new FormControl(null, Validators.required),
+        email: new FormControl(null, [Validators.required, Validators.email]),
+      }),
+      gender: new FormControl("male"),
+    });
+  }
+
+  onSubmit() {
+    console.log(this.signupForm);
+  }
+}
+```
+
+<br><br>
+
+### **Fixing a Bug** <span id="a1519"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+In the next lecture, we'll add some code to access the controls of our form array:
+
+`*ngFor="let hobbyControl of signupForm.get('hobbies').controls; let i = index"`
+
+This code will fail as of the latest Angular version.
+
+You can fix it easily though. Outsource the "get the controls" logic into a method of your component code (the `.ts` file):
+
+```ts
+getControls() {
+  return (<FormArray>this.signupForm.get('hobbies')).controls;
+}
+```
+
+In the template, you can then use:
+
+`*ngFor="let hobbyControl of getControls(); let i = index"`
+
+**Alternatively**, you can set up a getter and use an alternative type casting syntax:
+
+```ts
+get controls() {
+  return (this.signupForm.get('hobbies') as FormArray).controls;
+}
+```
+
+and then in the template:
+
+`*ngFor="let hobbyControl of controls; let i = index"`
+
+This adjustment is required due to the way TS works and Angular parses your templates (it doesn't understand TS there).
+
+<br><br>
+
+### **Reactive: Arrays of Form Controls (FormArray)** <span id="a1519"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```html
+<div formArrayName="hobbies">
+  <h4>Your Hobbies</h4>
+  <button class="btn btn-default" type="button" (click)="onAddHobby()">
+    Add Hobby
+  </button>
+  <!-- <div
+            class="form-group"
+            *ngFor="let hobbyControl of getControls(); let i = index"
+          > -->
+  <!-- alternative: -->
+  <div class="form-group" *ngFor="let hobbyControl of controls; let i = index">
+    <input type="text" class="form-control" [formControlName]="i" />
+  </div>
+</div>
+```
+
+```ts
+import { Component, OnInit } from "@angular/core";
+import { FormArray, FormControl, FormGroup, Validators } from "@angular/forms";
+
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent implements OnInit {
+  genders = ["male", "female"];
+  signupForm!: FormGroup;
+
+  ngOnInit(): void {
+    this.signupForm = new FormGroup({
+      userData: new FormGroup({
+        username: new FormControl(null, Validators.required),
+        email: new FormControl(null, [Validators.required, Validators.email]),
+      }),
+      gender: new FormControl("male"),
+      // create hobbies prop which holds an array of Form controls
+      hobbies: new FormArray([]),
+    });
+  }
+
+  onSubmit() {
+    console.log(this.signupForm);
+  }
+
+  // getControls() {
+  //          // cast the type
+  //   return (<FormArray>this.signupForm.get('hobbies')).controls;
+  // }
+
+  // alternative:
+  get controls() {
+    // cast the type
+    return (this.signupForm.get("hobbies") as FormArray).controls;
+  }
+
+  onAddHobby() {
+    const control = new FormControl(null, Validators.required);
+    // you have to cast the FormArray type in order for it to work
+    (<FormArray>this.signupForm.get("hobbies")).push(control);
+  }
+}
+```
+
+<br><br>
+
+### **Reactive: Creating Custom Validators** <span id="a1520"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+A Validator is just a function which gets executed by Angular automatically when it checks the validity of the form control, and it checks that validity whenever you change that control.
+
+<br>
+
+Creating Custom Validator which forbids the use of certain usernames:
+
+```ts
+  signupForm!: FormGroup;
+  forbiddenUsernames = ['Chris', 'Anna'];
+
+  ngOnInit(): void {
+    this.signupForm = new FormGroup({
+      userData: new FormGroup({
+        username: new FormControl(null, [
+          Validators.required,
+          this.forbiddenNames.bind(this),
+        ]),
+        email: new FormControl(null, [Validators.required, Validators.email]),
+      }),
+      gender: new FormControl('male'),
+      hobbies: new FormArray([]),
+    });
+  }
+
+  get controls() {
+    return (this.signupForm.get('hobbies') as FormArray).controls;
+  }
+
+  onAddHobby() {
+    const control = new FormControl(null, Validators.required);
+    (<FormArray>this.signupForm.get('hobbies')).push(control);
+  }
+
+  // Validator has to have an argument of type FormControl
+  forbiddenNames(control: FormControl): {
+    // validator has to return something, which is
+    // any key of type string, the value has to be a boolean
+    [s: string]: boolean;
+  } {
+    // if forbiddenUsernames contains a certain element
+    // the element is the value of our control we pass/check
+    if (this.forbiddenUsernames.indexOf(control.value) !== -1) {
+      return { nameIsForbidden: true };
+    }
+    // if validation is successfull, you have to return nothing or null
+    return null as any;
+    // null === form control is valid
+
+    // e.g. this function would return: {nameIsForbidden: true}
+  }
+```
+
+<br><br>
+
+### **Reactive: Using Error Codes** <span id="a1521"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```html
+<div class="form-group">
+  <label for="username">Username</label>
+  <input
+    type="text"
+    id="username"
+    class="form-control"
+    formControlName="username"
+  />
+
+  <span
+    *ngIf="
+      !signupForm.get('userData.username')?.valid &&
+      (signupForm.get('userData.username')?.touched ||
+        signupForm.get('userData.username')?.dirty)
+    "
+    class="help-block"
+  >
+    <span
+      *ngIf="signupForm?.get('userData.username')?.errors?.['nameIsForbidden']"
+    >
+      This name is invalid!
+    </span>
+
+    <!-- errors['errorOrValidatorName'] -->
+    <span *ngIf="signupForm?.get('userData.username')?.errors?.['required']">
+      This field is required!
+    </span>
+  </span>
+</div>
+```
+
+<br><br>
+
+### **Reactive: Creating a Custom Async Validator** <span id="a1522"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```ts
+// forbiddenEmail(control: FormControl): Promise<any> | Observable<any> {}
+forbiddenEmails(control: any) {
+  const promise = new Promise<any>((resolve, reject) => {
+    setTimeout(() => {
+      if (control.value === 'test@test.com') {
+        resolve({ emailIsForbidden: true });
+      } else {
+        resolve(null);
+      }
+    }, 1500);
+  });
+  return promise;
+}
+```
+
+<br><br>
+
+### **Reactive: Reacting to Status or Value Changes** <span id="a1523"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+```ts
+// you can call this on individual form control
+this.signupForm.valueChanges.subscribe((value) => console.log(value));
+this.signupForm.statusChanges.subscribe((value) => console.log(value));
+```
+
+Those two observables are great if you want to closely watch what happens in your form, or in a individual control, and want to react to that.
+
+<br><br>
+
+### **Reactive: Setting and Patching Values** <span id="a1524"></span><a href="#top15">&#8593;</a>
+
+<br>
+
+setValue() - set all control values in your form
+
+```ts
+this.signupForm.setValue({
+  userData: {
+    username: "Mark",
+    email: "mark@test.com",
+  },
+  gender: "male",
+  hobbies: [],
+});
+```
+
+<br>
+
+patchValue() - update a part of the form (1 or more)
+
+```ts
+this.signupForm.patchValue({
+  userData: {
+    username: "Mark",
+  },
+  gender: "male",
+});
+```
+
+<br>
+
+reset() - reset the form values and state
+
+```ts
+  onSubmit() {
+    console.log(this.signupForm);
+    this.signupForm.reset();
+  }
+```
+
+Note: You can pass an object to reset() to reset specific values.
 
 <br>
