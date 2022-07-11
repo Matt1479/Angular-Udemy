@@ -6281,4 +6281,48 @@ reset() - reset the form values and state
 
 Note: You can pass an object to reset() to reset specific values.
 
+<br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 16: Course Project - Forms** <a href="#nav">&#8593;</a> <span id="top16"></span>
+
+<br><br>
+
+Change the text content of a button depending on whether we're in editMode or not:
+
+```html
+<button class="btn btn-success" type="submit" [disabled]="!f.valid">
+  {{ editMode ? "Update" : "Add" }}
+</button>
+```
+
 <br>
+
+Delete a specific control from Array of Controls:
+
+```ts
+onDeleteIngredient(index: number) {
+  (<FormArray>this.recipeForm.get('ingredients')).removeAt(index);
+}
+```
+
+<br>
+
+### Deleting all Items in a FormArray
+
+As of **Angular 8+**, there's a new way of **clearing all items** in a `FormArray`.
+
+```ts
+(<FormArray>this.recipeForm.get("ingredients")).clear();
+```
+
+The `clear()` method automatically loops through all registered `FormControl`s (or `FormGroup`s) in the FormArray and removes them.
+
+It's like manually creating a loop and calling `removeAt()` for every item.
+
+<br><br>
+
+<hr>
