@@ -6475,6 +6475,10 @@ export class ProfileEditorComponent {
 }
 ```
 
+<br><br>
+
+(Course Project - Code)
+
 <br>
 
 ```html
@@ -6740,3 +6744,74 @@ It's like manually creating a loop and calling `removeAt()` for every item.
 <br><br>
 
 <hr>
+
+<br><br>
+
+## **Section 17: Using Pipes to Transform Output** <a href="#nav">&#8593;</a> <span id="top17"></span>
+
+<br><br>
+
+1. <a href="#a1700">Using Pipes</a>
+2. <a href="#a1701">Parametrizing Pipes</a>
+3. <a href="#a1702">Built-in Pipes - Angular Documentation</a>
+4. <a href="#a1703">Chaining Multiple Pipes</a>
+
+<br><br>
+
+### **Using Pipes** <span id="a1700"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+```html
+<!-- uppercase pipe -->
+<p>{{ server.instanceType | uppercase }}</p>
+
+<!-- date pipe -->
+<p>{{ server.started | date }}</p>
+```
+
+<br><br>
+
+### **Parametrizing Pipes** <span id="a1701"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+Adding parameters to pipes( add a colon, `pipe:parameter:anotherParameter:etc` ) :
+
+```html
+<!-- date pipe with parameters -->
+<p>{{ server.started | date: "fullDate" }}</p>
+<p>{{ server.started | date: "y-m-d" }}</p>
+```
+
+<br><br>
+
+### **Built-in Pipes - Angular Documentation** <span id="a1702"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+https://angular.io/api?query=pipe
+
+<br>
+
+Date Pipe: https://angular.io/api/common/DatePipe#pre-defined-format-options
+
+<br><br>
+
+### **Chaining Multiple Pipes** <span id="a1703"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+```html
+<p>{{ server.started | date: "fullDate" | uppercase }}</p>
+```
+
+The order matters, it's parsed from left to right,
+
+so if you'd use uppercase `pipe` first, and then date `pipe`, it would throw an error (it cannot parse `Date`).
+
+<br><br>
+
+### **Creating a Custom Pipe** <span id="a1704"></span><a href="#top17">&#8593;</a>
+
+<br>
