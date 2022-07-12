@@ -36,6 +36,10 @@
 
 ### <a href="#top15">**Section-15: Handing Forms in Angular Apps**</a>
 
+### <a href="#top16">**Section-16: Course Project - Forms (TD/Reactive)**</a>
+
+### <a href="#top17">**Section-17: Using Pipes to Transform Output**</a>
+
 </nav>
 
 <br><br>
@@ -6291,6 +6295,134 @@ Note: You can pass an object to reset() to reset specific values.
 
 <br><br>
 
+1. <a href="#a1600">Template Driven Approach</a>
+2. <a href="#a1601">(TD): Editing an Item</a>
+3. <a href="#a1602">(Reactive) Setup</a>
+4. <a href="#a1603">(Reactive) Deleting all Items in a FormArray</a>
+
+<br><br>
+
+### Template Driven Approach: <span id="a1600"></span><a href="#top16">&#8593;</a>
+
+```html
+<form (ngSubmit)="onSubmit(f)" #f="ngForm">
+  <div class="col-sm-5 form-group">
+    <label for="name">Name</label>
+    <input
+      type="text"
+      id="name"
+      class="form-control"
+      #nameInput
+      ngModel
+      name="name"
+      required
+    />
+    <div
+      *ngIf="
+        !f.controls['name']?.valid 
+        &&
+        (
+          f.controls['name']?.touched 
+          ||
+           f.controls['name']?.dirty
+        )
+      "
+    >
+      <div *ngIf="f.controls['name']?.errors?.['required']" class="text-danger">
+        Name is required
+      </div>
+    </div>
+  </div>
+  <button type="submit" (click)="onAddItem()">Submit</button>
+</form>
+```
+
+<br><br>
+
+### (TD): Editing an Item: <span id="a1601"></span><a href="#top16">&#8593;</a>
+
+```html
+<!-- #1 get the index -->
+<a
+  class="list-group-item"
+  style="cursor: pointer"
+  *ngFor="let ingredient of ingredients; let i = index"
+  (click)="onEdit(i)"
+>
+  {{ ingredient.name }} ({{ ingredient.amount }})
+</a>
+```
+
+```ts
+// #2 pass it via service/Subject
+onEdit(index: number) {
+  this.slService.startedEditing.next(index);
+}
+```
+
+```ts
+// Service
+startedEditing = new Subject<number>();
+
+getIngredient(index: number) {
+  return this.ingredients[index];
+}
+
+updateIngredient(index: number, newIngredient: Ingredient) {
+  this.ingredients[index] = newIngredient;
+  this.ingredientsChanged.next(this.ingredients.slice());
+}
+```
+
+```ts
+@ViewChild('f', { static: false }) slForm!: NgForm;
+
+subscription!: Subscription;
+
+editMode = false;
+
+editedItemIndex!: number;
+editedItem!: Ingredient;
+
+
+constructor(private slService: ShoppingListService) {}
+
+ngOnInit() {
+  // subscribe to Subject to get new values
+  this.subscription = this.slService.startedEditing.subscribe(
+    (index: number) => {
+      this.editMode = true;
+      this.editedItemIndex = index;
+
+      // get the item with a certain index
+      this.editedItem = this.slService.getIngredient(index);
+
+      // #3 set the values
+      this.slForm.setValue({
+        name: this.editedItem.name,
+        amount: this.editedItem.amount,
+      });
+    }
+  );
+}
+```
+
+```ts
+// #4: call a certain method depending on whether we're in editMode or not
+onAddItem(form: NgForm) {
+  const value = form.value;
+  const newIngredient = new Ingredient(value.name, value.amount);
+
+  if (this.editMode) {
+    this.slService.updateIngredient(this.editedItemIndex, newIngredient);
+  } else {
+    this.slService.addIngredient(newIngredient);
+  }
+}
+```
+
+<br><br>
+
 Change the text content of a button depending on whether we're in editMode or not:
 
 ```html
@@ -6299,7 +6431,289 @@ Change the text content of a button depending on whether we're in editMode or no
 </button>
 ```
 
+<br><br>
+
+### (Reactive) Setup <span id="a1602"></span><a href="#top16">&#8593;</a>
+
+#### Two Options
+
+FormGroup:
+
+```ts
+export class ProfileEditorComponent {
+  profileForm = new FormGroup({
+    email: this.emailFormControl,
+    firstName: new FormControl(""),
+    lastName: new FormControl(""),
+    address: new FormGroup({
+      street: new FormControl(""),
+      city: new FormControl(""),
+      state: new FormControl(""),
+      zip: new FormControl(""),
+    }),
+  });
+}
+```
+
+FormBuilder:
+
+```ts
+export class ProfileEditorComponent {
+  constructor(private fb: FormBuilder) {}
+
+  profileForm = this.fb.group({
+    email: this.emailFormControl,
+    firstName: [""],
+    lastName: [""],
+    address: this.fb.group({
+      street: [""],
+      city: [""],
+      state: [""],
+      zip: [""],
+    }),
+  });
+}
+```
+
 <br>
+
+```html
+<div class="row">
+  <div class="col-xs-12">
+    <form (ngSubmit)="onSubmit()" [formGroup]="recipeForm">
+      <div class="row">
+        <div class="col-xs-12">
+          <button
+            [disabled]="!recipeForm.valid"
+            type="submit"
+            class="btn btn-success"
+          >
+            Save
+          </button>
+          <button type="button" class="btn btn-danger" (click)="onCancel()">
+            Cancel
+          </button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input
+              type="text"
+              id="name"
+              class="form-control"
+              formControlName="name"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="imagePath">Image URL</label>
+            <input
+              type="text"
+              id="imagePath"
+              class="form-control"
+              formControlName="imagePath"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <img
+            [src]="recipeForm?.get('imagePath')?.value"
+            alt=""
+            class="img-responsive"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea
+              type="text"
+              id="description"
+              class="form-control"
+              rows="6"
+              formControlName="description"
+            ></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-12" formArrayName="ingredients">
+          <div
+            class="row"
+            *ngFor="let ingredientCtrl of controls; let i = index"
+            [formGroupName]="i"
+            style="margin-top: 10px"
+          >
+            <div class="col-xs-8">
+              <input type="text" class="form-control" formControlName="name" />
+            </div>
+            <div class="col-xs-2">
+              <input
+                type="text"
+                class="form-control"
+                formControlName="amount"
+              />
+            </div>
+            <div class="col-xs-2">
+              <button
+                type="button"
+                class="btn btn-danger"
+                (click)="onControlDelete(i)"
+              >
+                X
+              </button>
+            </div>
+          </div>
+          <hr />
+          <div class="row">
+            <div class="col-xs-12">
+              <button
+                type="button"
+                class="btn btn-success"
+                (click)="onAddIngredient()"
+              >
+                Add Ingredient
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+```
+
+```ts
+import { Component, OnInit } from "@angular/core";
+import {
+  Form,
+  FormArray,
+  FormControl,
+  FormGroup,
+  Validators,
+} from "@angular/forms";
+import { ActivatedRoute, Params, Router } from "@angular/router";
+import { Recipe } from "../recipe.model";
+import { RecipeService } from "../recipe.service";
+
+@Component({
+  selector: "app-recipe-edit",
+  templateUrl: "./recipe-edit.component.html",
+  styleUrls: ["./recipe-edit.component.css"],
+})
+export class RecipeEditComponent implements OnInit {
+  id!: number;
+  editMode = false;
+
+  recipeForm!: FormGroup;
+
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private rS: RecipeService
+  ) {}
+
+  ngOnInit() {
+    this.route.params.subscribe((params: Params) => {
+      this.id = +params["id"];
+      this.editMode = params["id"] != null;
+
+      // Whenever our route params change, call initForm
+      this.initForm();
+    });
+  }
+
+  private initForm() {
+    let recipeName = "";
+    let recipeImagePath = "";
+    let recipeDescription = "";
+    let recipeIngredients = new FormArray<FormGroup>([]);
+
+    // if we're in editMode, get the values (from service)
+    if (this.editMode) {
+      const recipe = this.rS.getRecipe(this.id);
+      recipeName = recipe.name;
+      recipeImagePath = recipe.imagePath;
+      recipeDescription = recipe.description;
+
+      // if my recipe has ingredients
+      if (recipe["ingredients"]) {
+        for (let ingredient of recipe.ingredients) {
+          recipeIngredients.push(
+            new FormGroup({
+              name: new FormControl(ingredient.name, [Validators.required]),
+              amount: new FormControl(ingredient.amount, [
+                Validators.required,
+                Validators.pattern(/^[1-9]+[0-9]*$/),
+              ]),
+            })
+          );
+        }
+      }
+    }
+
+    // create form & initiate values
+    // (either empty or from a service if we're in editMode)
+    this.recipeForm = new FormGroup({
+      name: new FormControl(recipeName, [Validators.required]),
+      imagePath: new FormControl(recipeImagePath, [Validators.required]),
+      description: new FormControl(recipeDescription, [Validators.required]),
+      ingredients: recipeIngredients,
+    });
+  }
+
+  get controls() {
+    return (<FormArray>this.recipeForm.get("ingredients")).controls;
+  }
+
+  onSubmit() {
+    // const newRecipe = new Recipe(
+    //   this.recipeForm.value['name'],
+    //   this.recipeForm.value['description'],
+    //   this.recipeForm.value['imagePath'],
+    //   this.recipeForm.value['ingredients']
+    // );
+
+    if (this.editMode) {
+      this.rS.updateRecipe(this.id, this.recipeForm.value);
+    } else {
+      this.rS.addRecipe(this.recipeForm.value);
+    }
+
+    this.onCancel();
+  }
+
+  onAddIngredient() {
+    (<FormArray>this.recipeForm.get("ingredients")).push(
+      new FormGroup({
+        name: new FormControl("", [Validators.required]),
+        amount: new FormControl("", [
+          Validators.required,
+          Validators.pattern(/^[1-9]+[0-9]*$/),
+        ]),
+      })
+    );
+  }
+
+  onCancel() {
+    this.router.navigate([".."], { relativeTo: this.route });
+  }
+
+  onControlDelete(index: number) {
+    (<FormArray>this.recipeForm.get("ingredients")).removeAt(index);
+  }
+}
+```
+
+<br><br>
 
 Delete a specific control from Array of Controls:
 
@@ -6311,7 +6725,7 @@ onDeleteIngredient(index: number) {
 
 <br>
 
-### Deleting all Items in a FormArray
+### (Reactive) Deleting all Items in a FormArray <span id="a1603"></span><a href="#top16">&#8593;</a>
 
 As of **Angular 8+**, there's a new way of **clearing all items** in a `FormArray`.
 
