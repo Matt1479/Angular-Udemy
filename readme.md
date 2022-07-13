@@ -6812,6 +6812,178 @@ so if you'd use uppercase `pipe` first, and then date `pipe`, it would throw an 
 
 <br><br>
 
-### **Creating a Custom Pipe** <span id="a1704"></span><a href="#top17">&#8593;</a>
+### **Custom Pipes** <span id="a1704"></span><a href="#top17">&#8593;</a>
 
 <br>
+
+#### Creating a Custom Pipe
+
+Create it using CLI: `ng g p pipe-name`
+
+You have to add the pipe to declarations
+
+<br>
+
+Pipe's requiremenets: @Pipe decorator, transform method, Add Pipe to declarations[] (AppModule).
+
+<br>
+
+#### Parametrizing a Custom Pipe
+
+<br>
+
+```ts
+import { Pipe, PipeTransform } from "@angular/core";
+
+@Pipe({
+  name: "shorten", // selector
+})
+export class ShortenPipe implements PipeTransform {
+  transform(value: string, limit: number) {
+    if (value.length > limit) {
+      return value.substr(0, limit) + "...";
+    }
+    return value;
+  }
+}
+```
+
+```html
+<p>{{ server.name | shorten: 10 }}</p>
+```
+
+<br><br>
+
+### **Creating a Filter Pipe** <span id="a1705"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+```ts
+import { Pipe, PipeTransform } from "@angular/core";
+
+@Pipe({
+  name: "filter",
+})
+export class FilterPipe implements PipeTransform {
+  transform(value: any, filterString: string, propName: any) {
+    // check if there are any elements in the array
+    if (value.length === 0 || filterString === "") {
+      return value;
+    }
+    const resultArray = [];
+    for (const item of value) {
+      if (item[propName] === filterString) {
+        resultArray.push(item);
+      }
+    }
+    return resultArray;
+  }
+}
+```
+
+```html
+<ul class="list-group">
+  <li
+    class="list-group-item"
+    *ngFor="let server of servers | filter: filteredStatus:'status'"
+    [ngClass]="getStatusClasses(server)"
+  >
+    <span class="badge"> {{ server.status }} </span>
+  </li>
+</ul>
+```
+
+<br><br>
+
+### **Pure and Impure Pipes (or: How to "fix" the Filter Pipe)** <span id="a1706"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+Angular by default is not re-running our pipe on data changes (Arrays/Objects).
+
+<br>
+
+Changing the input of the pipe (Array/Object) will trigger pipe to re-run.
+
+<br>
+
+You can force Pipe to re-run on every data change, but it will cost a lot of performance.
+
+To do that, simply add `pure: false` property to `@Pipe` decorator:
+
+```ts
+@Pipe({
+  name: 'filter',
+  pure: false, // true by default
+})
+```
+
+<br><br>
+
+### **Async Pipe** <span id="a1707"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+```ts
+// change the appStatus to stable after 2500 ms
+appStatus = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve("stable");
+  }, 2500);
+});
+```
+
+```html
+<!-- this won't work! -->
+<!-- <h2>App Status: {{ appStatus }}</h2> -->
+
+<!-- this will work -->
+<h2>App Status: {{ appStatus | async }}</h2>
+```
+
+Async Pipe will recognize a `Promise` or `Observable`, if there will be any changes it will recognize those changes, and output the data.
+
+<br><br>
+
+### **Reverse & Sort Pipe** <span id="a1708"></span><a href="#top17">&#8593;</a>
+
+<br>
+
+```ts
+import { Pipe, PipeTransform } from "@angular/core";
+
+@Pipe({
+  name: "reverse",
+})
+export class ReversePipe implements PipeTransform {
+  transform(value: string) {
+    // split string into array
+    // reverse the array
+    // join the array elements
+    return value.split("").reverse().join("");
+  }
+}
+```
+
+<br>
+
+```ts
+import { Pipe, PipeTransform } from "@angular/core";
+
+@Pipe({
+  name: "sort",
+  pure: false, // warning: may lead to performance issues!
+})
+export class SortPipe implements PipeTransform {
+  transform(value: any, propName: string) {
+    // sort function returns 1 (greater than) or -1 (less than), or 0 (equal)
+    return value.sort((a: any, b: any) => {
+      if (a[propName] > b[propName]) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+  }
+}
+```
