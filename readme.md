@@ -40,6 +40,8 @@
 
 ### <a href="#top17">**Section-17: Using Pipes to Transform Output**</a>
 
+### <a href="#top18">**Section-18: Making Http Requests**</a>
+
 </nav>
 
 <br><br>
@@ -6987,3 +6989,1024 @@ export class SortPipe implements PipeTransform {
   }
 }
 ```
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 18: Making Http Requests** <a href="#nav">&#8593;</a> <span id="top18"></span>
+
+<br><br>
+
+1. <a href="#a1800">Angular: Connection with Backend</a>
+2. <a href="#a1801">The Anatomy of a Http Request</a>
+3. <a href="#a1802">Backend (Firebase) Setup</a>
+4. <a href="#a1803">Sending a POST Request</a>
+5. <a href="#a1804">GETting Data</a>
+6. <a href="#a1805">Using RxJS Operators to Transform Response Data</a>
+7. <a href="#a1806">Using Types with the HttpClient</a>
+8. <a href="#a1807">Outputting Posts</a>
+9. <a href="#a1808">Showing a Loading Indicator</a>
+10. <a href="#a1809">Using a Service for Http Requests(1/2)</a>
+11. <a href="#a1810">Services & Components Working Together(2/2)</a>
+12. <a href="#a1811">Sending a DELETE Request</a>
+13. <a href="#a1812">Handling Errors(1/2)</a>
+14. <a href="#a1813">Using Subjects for Error Handling</a>
+15. <a href="#a1814">Using the catchError Operator</a>
+16. <a href="#a1815">Error Handling & UX</a>
+17. <a href="#a1816">Setting Headers</a>
+18. <a href="#a1817">Adding Query Params</a>
+19. <a href="#a1818">Observing Different Types of Responses</a>
+20. <a href="#a1819">Changing the Response Body Type</a>
+21. <a href="#a1820">Interceptors</a>
+22. <a href="#a1821">Useful links</a>
+
+<br><br>
+
+### **Angular: Connection with Backend** <span id="a1800"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+<img src="./img/http-01-api-backend.png" alt="http-01-db-api">
+
+<br>
+
+https://academind.com/tutorials/building-a-restful-api-with-nodejs
+
+https://academind.com/tutorials/hide-javascript-code
+
+<br><br>
+
+### **The Anatomy of a Http Request** <span id="a1801"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+<img src="./img/http-01-request.png" alt="http-request">
+
+<br><br>
+
+### **Backend (Firebase) Setup** <span id="a1802"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+Firebase.com -> create a new project -> create realtime database
+
+<br><br>
+
+### **Sending a POST Request** <span id="a1803"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+Add `HttpClientModule` to `imports[]` (AppModule).
+
+<br>
+
+Then inject HttpClient: `constructor(private http: HttpClient) {}`
+
+<br>
+
+```ts
+onCreatePost(postData: { title: string; content: string }) {
+  // Send Http request
+
+  // normally you send JSON data to API
+  // here Angular automatically converts JS to JSON
+  this.http
+    .post(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json',
+      postData
+    )
+    .subscribe((responseData) => {
+      console.log(responseData);
+    });
+}
+```
+
+```ts
+post(
+  "URL",
+  data // request body
+);
+```
+
+`post()` returns an observable that wraps the http request
+
+**Important Note**: Requests are ONLY sent when you subscribe.
+
+**Note**: You don't need to manage the subscription (unsubscribe), since it will complete after it will be done anyways, and also it's an observable provided by Angular in which you never need to manage subscription.
+
+<br><br>
+
+### **GETting Data** <span id="a1804"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+private fetchPosts() {
+  this.http
+    .get(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json'
+    )
+    .subscribe((posts) => {
+      console.log(posts);
+    });
+}
+
+// then call fetchPosts() whenever you want, e.g. ngOnInit() or onFetchPosts()
+onFetchPosts() {
+  // Send Http request
+  this.fetchPosts();
+}
+```
+
+<br><br>
+
+### **Using RxJS Operators to Transform Response Data** <span id="a1805"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+private fetchPosts() {
+  this.http
+    .get(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json'
+    )
+    // pipe() -- transform data
+    // map() -- maps the data & returns (changed) data
+    .pipe(
+      map((responseData: any) => {
+        const postsArray = [];
+        for (const key in responseData) {
+          if (responseData.hasOwnProperty(key)) {
+            postsArray.push({ ...responseData[key], id: key });
+          }
+        }
+        return postsArray;
+      })
+    )
+    .subscribe((posts) => {
+      console.log(posts);
+    });
+}
+```
+
+<br><br>
+
+### **Using Types with the HttpClient** <span id="a1806"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+export interface Post {
+  title: string;
+  content: string;
+  id?: string;
+}
+```
+
+```ts
+private fetchPosts() {
+  this.http
+    // get() - generic method
+    // specify the type of response body here
+    .get<{ [key: string]: Post }>(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json'
+    )
+    // pipe() -- transform data
+    // map() -- maps the data & returns (changed) data
+    .pipe(
+      map((responseData) => {
+        const postsArray: Post[] = [];
+        for (const key in responseData) {
+          if (responseData.hasOwnProperty(key)) {
+            postsArray.push({ ...responseData[key], id: key });
+          }
+        }
+        return postsArray;
+      })
+    )
+    .subscribe((posts) => {
+      console.log(posts);
+    });
+}
+```
+
+```ts
+onCreatePost(postData: Post) {
+  // Send Http request
+  console.log(postData);
+
+  this.http
+    // post() is also a generic method
+    .post<{ name: string }>(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json',
+      postData
+    )
+    .subscribe((responseData) => {
+      console.log(responseData);
+    });
+}
+```
+
+<br><br>
+
+### **Outputting Posts** <span id="a1807"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+private fetchPosts() {
+  this.http
+    // get() - generic method
+    // specify the type of response body here
+    .get<{ [key: string]: Post }>(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json'
+    )
+    // pipe() -- transform data
+    // map() -- maps the data & returns (changed) data
+    .pipe(
+      map((responseData) => {
+        const postsArray: Post[] = [];
+        for (const key in responseData) {
+          if (responseData.hasOwnProperty(key)) {
+            postsArray.push({ ...responseData[key], id: key });
+          }
+        }
+        return postsArray;
+      })
+    )
+    .subscribe((posts) => {
+      this.loadedPosts = posts;
+    });
+}
+```
+
+```html
+<div class="row">
+  <div class="col-xs-12 col-md-6 col-md-offset-3">
+    <p *ngIf="loadedPosts.length < 1">No posts available!</p>
+    <ul class="list-group" *ngIf="loadedPosts.length >= 1">
+      <li class="list-group-item" *ngFor="let post of loadedPosts">
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.content }}</p>
+      </li>
+    </ul>
+  </div>
+</div>
+```
+
+<br><br>
+
+### **Showing a Loading Indicator** <span id="a1808"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+isFetching = false;
+
+// ...
+
+private fetchPosts() {
+  this.isFetching = true;
+  this.http
+    // get() - generic method
+    // specify the type of response body here
+    .get<{ [key: string]: Post }>(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json'
+    )
+    // pipe() -- transform data
+    // map() -- maps the data & returns (changed) data
+    .pipe(
+      map((responseData) => {
+        const postsArray: Post[] = [];
+        for (const key in responseData) {
+          if (responseData.hasOwnProperty(key)) {
+            postsArray.push({ ...responseData[key], id: key });
+          }
+        }
+        return postsArray;
+      })
+    )
+    .subscribe((posts) => {
+      this.isFetching = false;
+      this.loadedPosts = posts;
+    });
+}
+```
+
+```html
+<div class="row">
+  <div class="col-xs-12 col-md-6 col-md-offset-3">
+    <p *ngIf="loadedPosts.length < 1 && !isFetching">No posts available!</p>
+    <ul class="list-group" *ngIf="loadedPosts.length >= 1 && !isFetching">
+      <li class="list-group-item" *ngFor="let post of loadedPosts">
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.content }}</p>
+      </li>
+    </ul>
+    <p *ngIf="isFetching">Loading...</p>
+  </div>
+</div>
+```
+
+<br><br>
+
+### **Using a Service for Http Requests(1/2)** <span id="a1809"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { map } from "rxjs";
+
+import { Post } from "./post.mode";
+
+@Injectable({
+  providedIn: "root",
+})
+export class PostsService {
+  constructor(private http: HttpClient) {}
+
+  createAndStorePost(title: string, content: string) {
+    const postData: Post = { title: title, content: content };
+
+    // normally you send JSON data to API
+    // here Angular automatically converts JS to JSON
+    this.http
+      .post<{ name: string }>(
+        "https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json",
+        postData
+      )
+      .subscribe((responseData) => {
+        console.log(responseData);
+      });
+  }
+
+  fetchPosts() {
+    this.http
+      // get() - generic method
+      // specify the type of response body here
+      .get<{ [key: string]: Post }>(
+        "https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json"
+      )
+      // pipe() -- transform data
+      // map() -- maps the data & returns (changed) data
+      .pipe(
+        map((responseData) => {
+          const postsArray: Post[] = [];
+          for (const key in responseData) {
+            if (responseData.hasOwnProperty(key)) {
+              postsArray.push({ ...responseData[key], id: key });
+            }
+          }
+          return postsArray;
+        })
+      )
+      .subscribe((posts) => {
+        // ...
+      });
+  }
+}
+```
+
+```ts
+// AppComponent
+ngOnInit() {
+  this.pService.fetchPosts();
+}
+
+onCreatePost(postData: Post) {
+  // Send Http request
+  this.pService.createAndStorePost(postData.title, postData.content);
+}
+
+onFetchPosts() {
+  // Send Http request
+  this.pService.fetchPosts();
+}
+```
+
+Though it is quite not ready yet, we need to fix the communication between Services & Components.
+
+<br><br>
+
+### **Services & Components Working Together(2/2)** <span id="a1810"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+There are two ways to fix that:
+
+- use `Subject` in the `Service` (`.next(post)`) & subscribe to `Subject` in `AppComponent`
+  - use when there are many components that use this data
+- `return` result of `http.get()` & `.pipe()` (no subscribe in service)
+  - move the part that is related to your template to the component & be informed about the result of http requests by subscribing in the component
+  - move the rest into the service & return the Observable, so that you setup everything in the service, but you can subscribe in the component.
+
+<br>
+
+```ts
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { map } from "rxjs";
+
+import { Post } from "./post.mode";
+
+@Injectable({
+  providedIn: "root",
+})
+export class PostsService {
+  constructor(private http: HttpClient) {}
+
+  createAndStorePost(title: string, content: string) {
+    const postData: Post = { title: title, content: content };
+
+    // normally you send JSON data to API
+    // here Angular automatically converts JS to JSON
+    this.http
+      .post<{ name: string }>(
+        "https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json",
+        postData
+      )
+      .subscribe((responseData) => {
+        console.log(responseData);
+      });
+  }
+
+  fetchPosts() {
+    return (
+      this.http
+        // get() - generic method
+        // specify the type of response body here
+        .get<{ [key: string]: Post }>(
+          "https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json"
+        )
+        // pipe() -- transform data
+        // map() -- maps the data & returns (changed) data
+        .pipe(
+          map((responseData) => {
+            const postsArray: Post[] = [];
+            for (const key in responseData) {
+              if (responseData.hasOwnProperty(key)) {
+                postsArray.push({ ...responseData[key], id: key });
+              }
+            }
+            return postsArray;
+          })
+        )
+    );
+  }
+}
+```
+
+```ts
+// AppComponent
+loadedPosts: Post[] = [];
+isFetching = false;
+
+constructor(private http: HttpClient, private pService: PostsService) {}
+
+ngOnInit() {
+  this.fetchPosts();
+}
+
+onCreatePost(postData: Post) {
+  // Send Http request
+  this.pService.createAndStorePost(postData.title, postData.content);
+}
+
+onFetchPosts() {
+  // Send Http request
+  this.fetchPosts();
+}
+
+private fetchPosts() {
+  // result handling
+  this.isFetching = true;
+
+  this.pService.fetchPosts().subscribe((posts: Post[]) => {
+    this.isFetching = false;
+    this.loadedPosts = posts;
+  });
+}
+```
+
+<br><br>
+
+### **Sending a DELETE Request** <span id="a1811"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+// PostsService
+deletePosts() {
+  return this.http.delete(
+    'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json'
+  );
+}
+```
+
+```ts
+// AppComponent
+
+onClearPosts() {
+  // Send Http request
+  this.pService.deletePosts().subscribe(() => {
+    // clear the loadedPosts array
+    this.loadedPosts = [];
+  });
+}
+```
+
+<br><br>
+
+### **Handling Errors(1/2)** <span id="a1812"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+One way of handling errors
+
+<br>
+
+```ts
+error = null;
+
+private fetchPosts() {
+  // result handling
+  this.isFetching = true;
+
+  this.pService.fetchPosts().subscribe({
+    next: (posts: Post[]) => {
+      this.isFetching = false;
+      this.loadedPosts = posts;
+    },
+    error: (error: Error) => {
+      this.error = error.message;
+      // console.log(error);
+    },
+  });
+}
+```
+
+```html
+<p *ngIf="isFetching && !error">Loading...</p>
+<div class="alert alert-danger" *ngIf="error">
+  <h1>An Error Occurred!</h1>
+  <p>{{ error }}</p>
+</div>
+```
+
+<br><br>
+
+### **Using Subjects for Error Handling** <span id="a1813"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+Another way of handling errors - using Subjects
+
+<br>
+
+Good to use when you send a request, and don't subscribe to it in your component, also if many components need to use that error data.
+
+<br>
+
+```ts
+// PostsService
+errorSubject = new Subject<string>();
+
+createAndStorePost(title: string, content: string) {
+    const postData: Post = { title: title, content: content };
+
+    this.http
+      .post<{ name: string }>(
+        'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json',
+        postData
+      )
+      .subscribe({
+        next: (responseData) => {
+          console.log(responseData);
+        },
+        error: (error: Error) => {
+          this.errorSubject.next(error.message);
+        },
+      });
+  }
+```
+
+```ts
+// AppComponent
+
+error: null | string = null;
+private errorSub!: Subscription;
+
+constructor(private http: HttpClient, private pService: PostsService) {}
+
+ngOnInit() {
+  this.errorSub = this.pService.errorSubject.subscribe(
+    (errorMessage: string) => {
+      this.error = errorMessage;
+    }
+  );
+
+  this.fetchPosts();
+}
+
+ngOnDestroy(): void {
+  this.errorSub.unsubscribe();
+}
+```
+
+<br><br>
+
+### **Using the catchError Operator** <span id="a1814"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+fetchPosts() {
+  return (
+    this.http
+      .get<{ [key: string]: Post }>(
+        'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json'
+      )
+      .pipe(
+        map((responseData) => {
+          const postsArray: Post[] = [];
+          for (const key in responseData) {
+            if (responseData.hasOwnProperty(key)) {
+              postsArray.push({ ...responseData[key], id: key });
+            }
+          }
+          return postsArray;
+        }),
+        // catch errors with catchError Operator
+        catchError((errorResp) => {
+          throw errorResp;
+        })
+      )
+  );
+}
+```
+
+<br><br>
+
+### **Error Handling & UX** <span id="a1815"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+private fetchPosts() {
+  // result handling
+  this.isFetching = true;
+
+  this.pService.fetchPosts().subscribe({
+    next: (posts: Post[]) => {
+      this.isFetching = false;
+      this.loadedPosts = posts;
+    },
+    error: (error: Error) => {
+      // set isFetching to false
+      this.isFetching = false;
+      this.error = error.message;
+    },
+  });
+}
+
+onHandleError() {
+  this.error = null;
+}
+```
+
+```html
+<p *ngIf="isFetching && !error">Loading...</p>
+<div class="alert alert-danger" *ngIf="error">
+  <h1>An Error Occurred!</h1>
+  <p>{{ error }}</p>
+  <button class="btn btn-danger" (click)="onHandleError()">Dismiss</button>
+</div>
+```
+
+<br><br>
+
+### **Setting Headers** <span id="a1816"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+To add/set up a header, add another argument to http request (http.get/post etc):
+
+```ts
+this.http.get<{ [key: string]: Post }>(
+  "https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json",
+  {
+    headers: new HttpHeaders({ "Custom-Header": "Hello" }),
+  }
+);
+```
+
+<br><br>
+
+### **Adding Query Params** <span id="a1817"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+let searchParams = new HttpParams();
+searchParams = searchParams.append("print", "pretty");
+searchParams = searchParams.append("custom", "key");
+
+this.http.get<{ [key: string]: Post }>(
+  "https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json",
+  {
+    headers: new HttpHeaders({ "Custom-Header": "Hello" }),
+    // params: new HttpParams().set("print", "pretty"),
+    params: searchParams,
+  }
+);
+```
+
+<br><br>
+
+### **Observing Different Types of Responses** <span id="a1818"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+createAndStorePost(title: string, content: string) {
+  const postData: Post = { title: title, content: content };
+
+  this.http
+    .post<{ name: string }>(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json',
+      postData,
+      {
+        // observe the response (now you have access to all the data)
+        observe: 'response', // 'body' by default
+      }
+    )
+    .subscribe({
+      next: (responseData) => {
+        console.log(responseData.body);
+        console.log(responseData.headers);
+        console.log(responseData.status);
+        console.log(responseData.url);
+      },
+      error: (error: Error) => {
+        this.errorSubject.next(error.message);
+      },
+    });
+}
+```
+
+<br>
+
+```ts
+deletePosts() {
+  return this.http
+    .delete(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json',
+      {
+        observe: 'events',
+      }
+    )
+    .pipe(
+      tap((event) => {
+        console.log(event);
+
+        if (event.type === HttpEventType.Sent) {
+          // ...
+        }
+
+        // check if we got the response
+        if (event.type === HttpEventType.Response) {
+          console.log(event.body);
+        }
+      })
+    );
+}
+```
+
+With that you have more control over your request status.
+
+<br><br>
+
+### **Changing the Response Body Type** <span id="a1819"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+```ts
+deletePosts() {
+  return this.http
+    .delete(
+      'https://ng-tutorial-5bad5-default-rtdb.europe-west1.firebasedatabase.app/posts.json',
+      {
+        observe: 'events',
+        responseType: 'text', // 'json' by default (parses to JS Object)
+      }
+    );
+    // ...pipe
+}
+```
+
+<br><br>
+
+<hr>
+
+### **Interceptors** <span id="a1820"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+#### **Introducing Interceptors**
+
+<br>
+
+Interceptor is a special Angular `Service` that can be used to intercept all the request and response calls and modify them to our requirement.
+
+<br>
+
+```ts
+import {
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from "@angular/common/http";
+
+export class AuthInterceptorService implements HttpInterceptor {
+  // if (req.url) { ... }
+
+  // intercept will run before the request is sent,
+  // and right before the response to subscribe
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    console.log("Request is on its way");
+
+    // return next to let the request continue
+    return next.handle(req);
+  }
+}
+```
+
+```ts
+// AppModule
+providers: [
+  {
+    provide: HTTP_INTERCEPTORS,
+    useClass: AuthInterceptorService, // point to your interceptor
+    multi: true // enable use of multiple interceptors
+  }
+],
+```
+
+<br><br>
+
+#### **Manipulating Request Objects**
+
+<br>
+
+```ts
+import {
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from "@angular/common/http";
+
+export class AuthInterceptorService implements HttpInterceptor {
+  // intercept will run before the request is sent,
+  // and right before the response to subscribe
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    console.log("Request is on its way");
+    console.log(req.url);
+
+    // change the request
+    const modofiedRequest = req.clone({
+      headers: req.headers.append("Auth", "xyz"),
+
+      // url: 'new-url',
+      // params: x,
+    });
+
+    // return (modifiedRequest) next to let the request continue
+    return next.handle(modofiedRequest);
+  }
+}
+```
+
+<br><br>
+
+#### **Response Interceptors**
+
+<br>
+
+```ts
+// ...
+export class AuthInterceptorService implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    console.log("Request is on its way");
+    console.log(req.url);
+
+    const modofiedRequest = req.clone({
+      headers: req.headers.append("Auth", "xyz"),
+    });
+
+    // return (modifiedRequest) next to let the request continue
+    return next.handle(modofiedRequest).pipe(
+      // tap() - take a look into the response
+      tap((event) => {
+        console.log(event);
+        // you always get an event
+        if (event.type === HttpEventType.Response) {
+          console.log("Response arrived, body data: ");
+          console.log(event.body);
+        }
+      })
+    );
+  }
+}
+```
+
+<br><br>
+
+#### **Multiple Interceptors**
+
+```ts
+// LoggingInterceptor
+import {
+  HttpEventType,
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from "@angular/common/http";
+import { tap } from "rxjs";
+
+export class LoggingInterceptorService implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    console.log("Outgoing request");
+    console.log(req.url);
+    console.log(req.headers);
+
+    return next.handle(req).pipe(
+      tap((event) => {
+        if (event.type === HttpEventType.Response) {
+          console.log("Incoming response");
+          console.log(event.body);
+        }
+      })
+    );
+  }
+}
+```
+
+```ts
+// AuthInterceptor
+import {
+  HttpHandler,
+  HttpInterceptor,
+  HttpRequest,
+} from "@angular/common/http";
+
+export class AuthInterceptorService implements HttpInterceptor {
+  intercept(req: HttpRequest<any>, next: HttpHandler) {
+    const modofiedRequest = req.clone({
+      headers: req.headers.append("Auth", "xyz"),
+    });
+
+    return next.handle(modofiedRequest);
+  }
+}
+```
+
+Provide multiple interceptors:
+
+```ts
+// AppModule
+providers: [
+  {
+    provide: HTTP_INTERCEPTORS,
+    useClass: AuthInterceptorService,
+    multi: true,
+  },
+  {
+    provide: HTTP_INTERCEPTORS,
+    useClass: LoggingInterceptorService,
+    multi: true,
+  },
+],
+```
+
+**Note**: The order in which you provide it in `providers[]` matters, `AuthInterceptorService` gets executed first.
+
+<br><br>
+
+### **Useful links** <span id="a1821"></span><a href="#top18">&#8593;</a>
+
+<br>
+
+Official Documentation:
+
+https://angular.io/guide/http
+
+<br><br>
+
+<hr>
+
+<br><br>
