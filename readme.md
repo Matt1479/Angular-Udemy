@@ -42,6 +42,8 @@
 
 ### <a href="#top18">**Section-18: Making Http Requests**</a>
 
+### <a href="#top29">**Section-29: A Basic Introduction to Unit Testing in Angular Apps**</a>
+
 </nav>
 
 <br><br>
@@ -8010,3 +8012,337 @@ https://angular.io/guide/http
 <hr>
 
 <br><br>
+
+## **Section 29: A Basic Introduction to Unit Testing** <a href="#nav">&#8593;</a> <span id="top29"></span>
+
+<br><br>
+
+1. <a href="#a2900">Why Unit Tests?</a>
+2. <a href="#a2901">Analyzing the Testing Setup (as created by the CLI)</a>
+3. <a href="#a2902">Running Tests (with the CLI)</a>
+4. <a href="#a2903">Adding a Component and some fitting Tests</a>
+5. <a href="#a2904">Testing Dependencies: Components and Services</a>
+6. <a href="#a2905">Simulating Async Tasks</a>
+7. <a href="#a2906">Using "fakeAsync" and "tick"</a>
+8. <a href="#a2907">Isolated vs Non-Isolated Tests"</a>
+9. <a href="#a2908">Further Resources & Where to Go Next</a>
+
+<br><br>
+
+### **Why Unit Tests?** <span id="a2900"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+<img src="./img/unit-tests-01.png" alt="unit-testing-01">
+
+<br>
+
+- Guard against Breaking Changes
+  - Unit tests allow us to guard against breaking changes - after upgrading the application, we re-run out tests, and see which tests now fail. Thanks to that we know what to fix.
+- Analyze Code Behaviour (Expected and Unexpected)
+- Reveal Design Mistakes
+
+<br><br>
+
+### **Analyzing the Testing Setup (as created by the CLI)** <span id="a2901"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+- Execute certain tasks the user might do or see
+
+<br>
+
+```ts
+import { TestBed } from "@angular/core/testing";
+import { RouterTestingModule } from "@angular/router/testing";
+import { AppComponent } from "./app.component";
+
+describe("AppComponent", () => {
+  // run this code before running each test
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [RouterTestingModule],
+      declarations: [AppComponent],
+    }).compileComponents();
+  });
+
+  // each it block is a test
+  it("should create the app", () => {
+    // during each tests we create component and store it in fixture
+    const fixture = TestBed.createComponent(AppComponent);
+    // we get our app, and we get the instance of the component
+    const app = fixture.componentInstance;
+
+    // we end our it block by using the expect method
+    // it means we expect: our app toBeTruthy (we expect that it exists)
+    expect(app).toBeTruthy();
+  });
+
+  // another test
+  it(`should have as title 'unit-testing'`, () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    // we expect app to have title property which equals 'unit-testing'
+    expect(app.title).toEqual("unit-testing");
+  });
+
+  it("should render title", () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    // we trigger change detection manually (template gets rendered)
+    fixture.detectChanges();
+
+    // get access to our template (native element)
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    // we expect a span that is a child of .content to contain 'unit-testing app is running!'
+    expect(compiled.querySelector(".content span")?.textContent).toContain(
+      "unit-testing app is running!"
+    );
+  });
+});
+```
+
+<br><br>
+
+### **Running Tests (with the CLI)** <span id="a2902"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+Run `ng test` in the terminal
+
+<br><br>
+
+### **Adding a Component and some fitting Tests** <span id="a2903"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+```ts
+describe("UserComponent", () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      declarations: [UserComponent],
+    });
+  });
+
+  it("should create the app", () => {
+    let fixture = TestBed.createComponent(UserComponent);
+    let app = fixture.componentInstance;
+    expect(app).toBeTruthy();
+  });
+});
+```
+
+<br><br>
+
+### **Testing Dependencies: Components and Services** <span id="a2904"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+Testing a service & component:
+
+```ts
+it("should use the user name from the service", () => {
+  // Arrange
+  let fixture = TestBed.createComponent(UserComponent);
+  let app = fixture.componentInstance;
+  // inject the UserService
+  let userService = fixture.debugElement.injector.get(UserService);
+
+  // Act
+  // detect changes - update the component state
+  fixture.detectChanges();
+
+  // Assert
+  expect(userService.user.name).toEqual(app.user.name);
+});
+
+it("should display user name if user is logged in", () => {
+  // Arrange
+  let fixture = TestBed.createComponent(UserComponent);
+  let app = fixture.componentInstance;
+  app.isLoggedIn = true;
+
+  // Act
+  fixture.detectChanges();
+  let compiled = fixture.debugElement.nativeElement;
+
+  // Assert
+  expect(compiled.querySelector("p").textContent).toContain(app.user.name);
+});
+
+it("should not display user name if user is logged in", () => {
+  // Arrange
+  let fixture = TestBed.createComponent(UserComponent);
+  let app = fixture.componentInstance;
+
+  // Act
+  fixture.detectChanges();
+  let compiled = fixture.debugElement.nativeElement;
+
+  // Assert
+  expect(compiled.querySelector("p").textContent).not.toContain(app.user.name);
+});
+```
+
+<br><br>
+
+### **Simulating Async Tasks** <span id="a2905"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+```ts
+// DataService
+getDetails() {
+  const resultPromise = new Promise<string>((resolve, reject) => {
+    setTimeout(() => {
+      resolve('Data');
+    }, 1500);
+  });
+  return resultPromise;
+}
+```
+
+```ts
+// UserComponent
+ngOnInit(): void {
+  this.user = this.userService.user;
+  this.dataService.getDetails().then((data: string) => {
+    this.data = data;
+  });
+}
+```
+
+```ts
+it("should not fetch data successfully if not called asynchronously", () => {
+  let fixture = TestBed.createComponent(UserComponent);
+  let app = fixture.debugElement.componentInstance;
+  let dataService = fixture.debugElement.injector.get(DataService);
+
+  // 2nd arg has to match the method name you want to spy on
+  // spyOn - we get informed (listen) whenever getDetails gets executed
+  // when running a test we will return a value on our own
+  // So it means it will eventually execute, but it will give us back our own data
+  // and not what this asynchronous task would have given us
+  // it will still run asynchronously though
+  let spy = spyOn(dataService, "getDetails").and.returnValue(
+    Promise.resolve("Data")
+  );
+
+  fixture.detectChanges();
+
+  expect(app.data).toBe(undefined);
+});
+
+it("should fetch data successfully if called asynchronously", async () => {
+  // label async to be able to call .whenStable()
+  let fixture = TestBed.createComponent(UserComponent);
+  let app = fixture.debugElement.componentInstance;
+  let dataService = fixture.debugElement.injector.get(DataService);
+
+  let spy = spyOn(dataService, "getDetails").and.returnValue(
+    Promise.resolve("Data")
+  );
+
+  fixture.detectChanges();
+
+  // whenStable() - when all async tasks are finished, run this code
+  fixture.whenStable().then(() => {
+    expect(app.data).toBe("Data");
+  });
+});
+```
+
+<br><br>
+
+### **Using "fakeAsync" and "tick"** <span id="a2906"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+```ts
+it("should fetch data successfully if called asynchronously", fakeAsync(() => {
+  let fixture = TestBed.createComponent(UserComponent);
+  let app = fixture.debugElement.componentInstance;
+  let dataService = fixture.debugElement.injector.get(DataService);
+
+  let spy = spyOn(dataService, "getDetails").and.returnValue(
+    Promise.resolve("Data")
+  );
+
+  fixture.detectChanges();
+
+  // tick() - in a fakeAsync environment, finish all tasks now
+  tick();
+
+  expect(app.data).toBe("Data");
+}));
+```
+
+So you could use either:
+
+- `async () => { fixture.whenStable().something() }`,
+- or `fakeAsync(() => {})`
+
+<br><br>
+
+### **Isolated vs Non-Isolated Tests** <span id="a2907"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+Isolated tests (not depending on Angular to do tests):
+
+```ts
+import { Pipe, PipeTransform } from "@angular/core";
+
+@Pipe({ name: "reverse" })
+export class ReversePipe implements PipeTransform {
+  transform(value: string) {
+    return value.split("").reverse().join("");
+  }
+}
+```
+
+```ts
+import { Pipe, PipeTransform } from "@angular/core";
+
+@Pipe({ name: "reverse" })
+export class ReversePipe implements PipeTransform {
+  transform(value: string) {
+    return value.split("").reverse().join("");
+  }
+}
+```
+
+When testing, ask yourself: Does the thing you want to test depend on Angular or other pices of your Angular application?
+
+If yes, then you have those testing utilities like `TestBed` which allow you to create components, access the injector, set up the module for testing,
+
+you have `async`, `fakeAsync`, `tick` to handle asynchronous tasks and so on.
+
+<br>
+
+If you don't have dependency on Angular then isolated test like the one here might be all you need.
+
+<br><br>
+
+### **Further Resources & Where to Go Next** <span id="a2908"></span><a href="#top29">&#8593;</a>
+
+<br>
+
+This Module **only provides a brief and basic Introduction** to Angular Unit Tests and the Angular Testing Suite. This Course isn't focused on Testing.
+
+If you want to dive deeper, the **official Docs** actually are a great place to start. There you'll also find a **Non-CLI Setup**!
+
+**Official Docs**: https://angular.io/docs/ts/latest/guide/testing.html
+
+I can also recommend the following Article: https://semaphoreci.com/community/tutorials/testing-components-in-angular-2-with-jasmine
+
+For **more Information on how to run Tests with the CLI** have a look at their official Docs:
+
+=> Unit Tests: https://github.com/angular/angular-cli/wiki/test
+
+=> E2E Tests: https://github.com/angular/angular-cli/wiki/e2e
+
+<br><br>
+
+<hr>
