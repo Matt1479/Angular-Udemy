@@ -8303,14 +8303,14 @@ export class ReversePipe implements PipeTransform {
 ```
 
 ```ts
-import { Pipe, PipeTransform } from "@angular/core";
+import { ReversePipe } from './reverse.pipe';
 
-@Pipe({ name: "reverse" })
-export class ReversePipe implements PipeTransform {
-  transform(value: string) {
-    return value.split("").reverse().join("");
-  }
-}
+describe('Reverse Pipe', () => {
+  it('should reverse a string', () => {
+    let reversePipe = new ReversePipe();
+    expect(reversePipe.transform('hello')).toEqual('olleh');
+  });
+});
 ```
 
 When testing, ask yourself: Does the thing you want to test depend on Angular or other pices of your Angular application?
