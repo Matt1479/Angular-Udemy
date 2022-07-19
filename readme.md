@@ -8013,6 +8013,378 @@ https://angular.io/guide/http
 
 <br><br>
 
+### ...
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+## **Section 25: NgRx** <a href="#nav">&#8593;</a> <span id="top25"></span>
+
+<br><br>
+
+1. <a href="#a2500">Introduction</a>
+2. <a href="#a2501"></a>
+3. <a href="#a2502"></a>
+4. <a href="#a2503"></a>
+5. <a href="#a2504"></a>
+6. <a href="#a2505"></a>
+7. <a href="#a2506"></a>
+8. <a href="#a2507"></a>
+9. <a href="#a2508"></a>
+
+<br><br>
+
+### **Introduction** <span id="a2500"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+NgRx is used to manage application state.
+
+<br>
+
+Simple Apps:
+
+- Managing state with Components & Services (RxJs and Subjects+) (+ backend)
+
+<br>
+
+Bigger Apps: NgRx
+
+<br>
+
+#### What is Application State?
+
+<br>
+
+Application State is lost when the application refreshes.
+
+<br>
+
+Persistent state - data is stored on backend
+
+<br>
+
+Application State - Any data/information that controls what should be visible on the screen.
+
+<br><br>
+
+### **What is NgRx?** <span id="a2501"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+Issues with RxJs Approach:
+
+- State can be updated anywhere
+- State is (possibly) mutable
+- Handling side effects (e.g. Http calls) is unclear
+
+In this case no specific pattern is enforced.
+
+#### RxJs helps a bit... (old approach)
+
+<img src="./img/rxjs.png" alt="rxjs">
+
+<br>
+
+Redux is the solution.
+
+<br>
+
+What is Redux?
+
+Redux is a state management pattern, it's also a library that helps you implement that pattern into any application.
+
+<br>
+
+<img src="./img/redux-pattern.png" alt="redux">
+
+Store - Single Source of Truth - Holds & Manages the Application State, think of it as a large JavaScript object that contains all the data the different parts of your application needs.
+
+<br>
+
+Services & Components receive State from Store
+
+<br>
+
+To change the State you `dispatch` Actions.
+
+<br>
+
+Action - JS Object with an identifier (to identify the kind of action you want to perform), and optionally a payload (if action needs extra data to complete).
+
+<br>
+
+Reducer - A JS Function that gets the current state (which is stored in the Store), and the Action as a input passed in automatically by the Redux library.
+
+In the reducer you can have a look at the Action identifier, find out what kind of Action it is (add/delete something), and then perform code on the state which you also got as an argument to update that state - in a mutable way - by copying it and then changing the copy.
+
+Reducer returns a copy of the new state which is then forwarded to the Application Store.
+
+<br>
+
+Reduced state then overwrites (immutably) the old state of application
+
+<br>
+
+NgRx - Angular's implementation of Redux:
+
+<img src="./img/NgRx.png" alt="NgRx">
+
+<br>
+
+It comes with some differences:
+
+- deeply integrated into Angular: e.g. comes with injectable services, so you can easily access your store in any part of your application by simply injecting it
+- it uses RxJs and Observables: all the state is managed by one large observable (advantage of it is that you can use operators on it)
+- Side Effects: e.g. Http requests - NgRx helps with it.
+
+<br><br>
+
+### **Getting Started with Reducers** <span id="a2502"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+Install NgRx: `npm install --save @ngrx/store`
+
+<br>
+
+Create Reducer:
+
+```ts
+const initialState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+};
+
+// state - current state
+// action - action that triggers the reducer (and state update)
+// state = initialState - set default value/state
+export function shoppingListReducer(state = initialState, action) {}
+```
+
+<br><br>
+
+### **Adding Logic to the Reducer** <span id="a2503"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "src/app/shared/ingredient.model";
+
+const initialState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+};
+
+// state - current state
+// action - action that triggers the reducer (and state update)
+// state = initialState - set default value/state
+export function shoppingListReducer(state = initialState, action: Action) {
+  switch (action.type) {
+    case "ADD_INGREDIENT":
+      // never touch the existing state!
+      return {
+        // good practice: always copy the old state, then overwrite what you want to change
+        ...state,
+        ingredients: [
+          ...state.ingredients, //action
+        ],
+      };
+  }
+}
+```
+
+<br><br>
+
+### **Understanding & Adding Actions** <span id="a2504"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+Create Actions:
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "src/app/shared/ingredient.model";
+
+// convention: use a constant which name is the same name as the identifier,
+// which should be descriptive about what this action does
+// and then you simply store your string indentifier in that constant
+export const ADD_INGREDIENT = "ADD_INGREDIENT";
+
+export class AddIngredient implements Action {
+  // type - indentifier of an action
+  readonly type = ADD_INGREDIENT;
+  // payload or any other name
+  payload: Ingredient;
+}
+```
+
+payload = e.g. a vehicle's load
+
+Use Actions in Reducer:
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "src/app/shared/ingredient.model";
+import { ADD_INGREDIENT } from "./shopping-list.actions";
+
+const initialState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+};
+
+export function shoppingListReducer(state = initialState, action: Action) {
+  switch (action.type) {
+    case ADD_INGREDIENT: // instead of 'ADD_INGREDIENT'
+      return {
+        ...state,
+        ingredients: [
+          ...state.ingredients, //action
+        ],
+      };
+  }
+}
+```
+
+<br><br>
+
+### **Setting Up the NgRx Store** <span id="a2505"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "src/app/shared/ingredient.model";
+// import everything as alias...
+import * as ShoppingListActions from "./shopping-list.actions";
+
+const initialState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+};
+
+export function shoppingListReducer(
+  state = initialState,
+  // set the correct type
+  action: ShoppingListActions.AddIngredient
+) {
+  switch (action.type) {
+    case ShoppingListActions.ADD_INGREDIENT:
+      return {
+        ...state,
+        // set the correct payload
+        ingredients: [...state.ingredients, action.payload],
+      };
+  }
+}
+```
+
+<br>
+
+Register/Import Store in AppModule:
+
+```ts
+imports: [
+  // StoreModule.forRoot() - pass Action Reducer Map - JS Object
+  // { identifier: reducer }
+  StoreModule.forRoot({ shoppingList: shoppingListReducer }),
+  // identifier - any descriptive key
+],
+```
+
+<br><br>
+
+### **Selecting State** <span id="a2506"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+```ts
+import { Component, OnInit } from "@angular/core";
+import { Store } from "@ngrx/store";
+import { Observable } from "rxjs";
+import { Ingredient } from "../shared/ingredient.model";
+
+@Component({
+  selector: "app-shopping-list",
+  templateUrl: "./shopping-list.component.html",
+  styleUrls: ["./shopping-list.component.css"],
+})
+export class ShoppingListComponent implements OnInit {
+  ingredients: Observable<{ ingredients: Ingredient[] }>;
+
+  // inject the store
+  constructor(
+    // Store<type>
+    // the type is a description of different parts we have in store
+    // shoppingList - key - it has to be the same as in the AppModule
+    // the type of the data stored in shoppingList is what the reducer function yields
+    // reducer function yields a state of type (initialState): { ingredients: Ingredient[] }
+    private store: Store<{ shoppingList: { ingredients: Ingredient[] } }>
+  ) {}
+
+  ngOnInit(): void {
+    // select() method - selects a slice() of your state
+    this.ingredients = this.store.select("shoppingList");
+
+    // this.ingredients = this.shoppingListService.getIngredients();
+    // this.inChangeSub = this.shoppingListService.ingredientsChanged.subscribe(
+    //   (ingredients: Ingredient[]) => {
+    //     this.ingredients = ingredients;
+    //   }
+    // );
+  }
+}
+```
+
+```html
+<div class="row">
+  <div class="col-xs-10">
+    <!-- to be able to loop through ingredients (observable), add async pipe -->
+    <!-- this will automatically subscribe to ingredients observable -->
+    <!-- then access the array of ingredients and loop through them -->
+    <a *ngFor="let ingredient of (ingredients | async).ingredients">
+      {{ ingredient.name }} ({{ ingredient.amount }})
+    </a>
+  </div>
+</div>
+```
+
+One more thing to make it work - set up the initial state properly:
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "src/app/shared/ingredient.model";
+import * as ShoppingListActions from "./shopping-list.actions";
+
+const initialState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+};
+
+export function shoppingListReducer(
+  state = initialState,
+  action: ShoppingListActions.AddIngredient
+) {
+  switch (action.type) {
+    case ShoppingListActions.ADD_INGREDIENT:
+      return {
+        ...state,
+        ingredients: [...state.ingredients, action.payload],
+      };
+    // return the default state - it has to be set explicitly
+    default:
+      return state;
+  }
+}
+```
+
+<br><br>
+
+<hr>
+
+<br><br>
+
+### ...
+
 ## **Section 29: A Basic Introduction to Unit Testing** <a href="#nav">&#8593;</a> <span id="top29"></span>
 
 <br><br>
@@ -8303,17 +8675,17 @@ export class ReversePipe implements PipeTransform {
 ```
 
 ```ts
-import { ReversePipe } from './reverse.pipe';
+import { ReversePipe } from "./reverse.pipe";
 
-describe('Reverse Pipe', () => {
-  it('should reverse a string', () => {
+describe("Reverse Pipe", () => {
+  it("should reverse a string", () => {
     let reversePipe = new ReversePipe();
-    expect(reversePipe.transform('hello')).toEqual('olleh');
+    expect(reversePipe.transform("hello")).toEqual("olleh");
   });
 });
 ```
 
-When testing, ask yourself: Does the thing you want to test depend on Angular or other pices of your Angular application?
+When testing, ask yourself: Does the thing you want to test depend on Angular or other pieces of your Angular application?
 
 If yes, then you have those testing utilities like `TestBed` which allow you to create components, access the injector, set up the module for testing,
 
