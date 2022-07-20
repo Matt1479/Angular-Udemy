@@ -8032,14 +8032,20 @@ https://angular.io/guide/http
 <br><br>
 
 1. <a href="#a2500">Introduction</a>
-2. <a href="#a2501"></a>
-3. <a href="#a2502"></a>
-4. <a href="#a2503"></a>
-5. <a href="#a2504"></a>
-6. <a href="#a2505"></a>
-7. <a href="#a2506"></a>
-8. <a href="#a2507"></a>
-9. <a href="#a2508"></a>
+2. <a href="#a2501">What is NgRx?</a>
+3. <a href="#a2502">Getting Started with Reducers</a>
+4. <a href="#a2503">Adding Logic to the Reducer</a>
+5. <a href="#a2504">Understanding & Adding Actions</a>
+6. <a href="#a2505">Setting Up the NgRx Store</a>
+7. <a href="#a2506">Selecting State</a>
+8. <a href="#a2507">Dispatching Actions</a>
+9. <a href="#a2508">Multiple Actions</a>
+10. <a href="#a2509">Preparing Update & Delete Actions</a>
+11. <a href="#a2510">Updating & Deleting Ingredients</a>
+12. <a href="#a2511">Expanding the State</a>
+13. <a href="#a2512">Managing More State via NgRx</a>
+14. <a href="#a2513">Removing Redundant Component State Management</a>
+15. <a href="#a2514">First Summary</a>
 
 <br><br>
 
@@ -8529,7 +8535,7 @@ export type ShoppingListActions =
 
 <br><br>
 
-### **Updating & Deleting Ingredients** <span id="a2509"></span><a href="#top25">&#8593;</a>
+### **Updating & Deleting Ingredients** <span id="a2510"></span><a href="#top25">&#8593;</a>
 
 <br>
 
@@ -8583,7 +8589,7 @@ this.store.dispatch(new SLActions.DeleteIngredient(this.editedItemIndex));
 
 <br><br>
 
-### **Expanding the State** <span id="a2510"></span><a href="#top25">&#8593;</a>
+### **Expanding the State** <span id="a2511"></span><a href="#top25">&#8593;</a>
 
 <br>
 
@@ -8620,7 +8626,7 @@ constructor(
 
 <br><br>
 
-### **Managing More State via NgRx** <span id="a2511"></span><a href="#top25">&#8593;</a>
+### **Managing More State via NgRx** <span id="a2512"></span><a href="#top25">&#8593;</a>
 
 <br>
 
@@ -8702,7 +8708,7 @@ ngOnInit(): void {
 
 <br><br>
 
-### **Removing Redundant Component State Management** <span id="a2512"></span><a href="#top25">&#8593;</a>
+### **Removing Redundant Component State Management** <span id="a2513"></span><a href="#top25">&#8593;</a>
 
 <br>
 
@@ -8905,7 +8911,7 @@ export class RecipeService {
 
 <br><br>
 
-### **First Summary** <span id="a2513"></span><a href="#top25">&#8593;</a>
+### **First Summary** <span id="a2514"></span><a href="#top25">&#8593;</a>
 
 <br>
 
