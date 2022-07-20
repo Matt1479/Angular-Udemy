@@ -8051,11 +8051,15 @@ Simple Apps:
 
 <br>
 
-Bigger Apps: NgRx
+Bigger Apps: Components & NgRx (+ backend - optionally)
 
 <br>
 
 #### What is Application State?
+
+<br>
+
+Application State - Data that's important to your application and that influences what should be visible on the screen. Application State is also for example when your application is waiting for http response (loading state), etc.
 
 <br>
 
@@ -8065,31 +8069,25 @@ Application State is lost when the application refreshes.
 
 Persistent state - data is stored on backend
 
-<br>
-
-Application State - Any data/information that controls what should be visible on the screen.
-
 <br><br>
+
+#### Issues with RxJs Approach:
+
+- State can be updated anywhere
+- State is (possibly) mutable - your code might not force you to overwrite old data with new data (Angular might not pick up Object/Array changes)
+- Handling side effects (e.g. Http calls) is unclear (when it should happen)
+
+In this case no specific pattern is enforced.
+
+#### RxJs (is almost the solution to state management...!)
+
+<img src="./img/rxjs.png" alt="rxjs">
 
 ### **What is NgRx?** <span id="a2501"></span><a href="#top25">&#8593;</a>
 
 <br>
 
-Issues with RxJs Approach:
-
-- State can be updated anywhere
-- State is (possibly) mutable
-- Handling side effects (e.g. Http calls) is unclear
-
-In this case no specific pattern is enforced.
-
-#### RxJs helps a bit... (old approach)
-
-<img src="./img/rxjs.png" alt="rxjs">
-
-<br>
-
-Redux is the solution.
+Redux is the solution to state management.
 
 <br>
 
@@ -8101,7 +8099,7 @@ Redux is a state management pattern, it's also a library that helps you implemen
 
 <img src="./img/redux-pattern.png" alt="redux">
 
-Store - Single Source of Truth - Holds & Manages the Application State, think of it as a large JavaScript object that contains all the data the different parts of your application needs.
+Store - Single Source of Truth - Holds & Manages the Application State, think of it as a large JavaScript object that contains all the data of the different parts of your application needs.
 
 <br>
 
@@ -8138,7 +8136,8 @@ NgRx - Angular's implementation of Redux:
 It comes with some differences:
 
 - deeply integrated into Angular: e.g. comes with injectable services, so you can easily access your store in any part of your application by simply injecting it
-- it uses RxJs and Observables: all the state is managed by one large observable (advantage of it is that you can use operators on it)
+- it uses RxJs and Observables: all the state is managed by one large observable (advantage of it is that you can use operators on it, to then edit the state you're fetching in the component when you need it)
+- supports TypeScript
 - Side Effects: e.g. Http requests - NgRx helps with it.
 
 <br><br>
@@ -8151,9 +8150,17 @@ Install NgRx: `npm install --save @ngrx/store`
 
 <br>
 
+The Reducer is a function that receives two arguments:
+
+- state (current state)
+- action (triggers reducer and state update)
+
+<br>
+
 Create Reducer:
 
 ```ts
+// Initial State must be an object
 const initialState = {
   ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
 };
@@ -8189,7 +8196,8 @@ export function shoppingListReducer(state = initialState, action: Action) {
         // good practice: always copy the old state, then overwrite what you want to change
         ...state,
         ingredients: [
-          ...state.ingredients, //action
+          ...state.ingredients,
+          action, // ?
         ],
       };
   }
@@ -8217,6 +8225,7 @@ export class AddIngredient implements Action {
   // type - indentifier of an action
   readonly type = ADD_INGREDIENT;
   // payload or any other name
+  // payload = data
   payload: Ingredient;
 }
 ```
@@ -8379,11 +8388,554 @@ export function shoppingListReducer(
 
 <br><br>
 
-<hr>
+### **Dispatching Actions** <span id="a2507"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "src/app/shared/ingredient.model";
+
+export const ADD_INGREDIENT = "ADD_INGREDIENT";
+
+export class AddIngredient implements Action {
+  // type - indentifier of an action
+  readonly type = ADD_INGREDIENT;
+
+  // payload or any other name
+  // payload: Ingredient;
+  // constructor with payload instead of (payload: Ingredient),
+  // so we can pass arguments
+  constructor(public payload: Ingredient) {}
+}
+```
+
+```ts
+import * as ShoppingListActions from '../store/shopping-list.actions';
+
+constructor(private store: Store<{ shoppingList: { ingredients: Ingredient[] } }>) {}
+
+// dispatch an action:
+this.store.dispatch(new ShoppingListActions.AddIngredient(newIngredient));
+// instead of using service:
+// this.shoppingListService.addIngredient(newIngredient);
+```
 
 <br><br>
 
-### ...
+### **Multiple Actions** <span id="a2508"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+Add New Action
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "../../shared/ingredient.model";
+
+export const ADD_INGREDIENT = "ADD_INGREDIENT";
+export const ADD_INGREDIENTS = "ADD_INGREDIENTS";
+
+export class AddIngredient implements Action {
+  readonly type = ADD_INGREDIENT;
+
+  constructor(public payload: Ingredient) {}
+}
+
+export class AddIngredients implements Action {
+  readonly type = ADD_INGREDIENTS;
+
+  constructor(public payload: Ingredient[]) {}
+}
+
+export type ShoppingListActions = AddIngredient | AddIngredients;
+```
+
+Add New Action to Reducer
+
+```ts
+import { Ingredient } from "src/app/shared/ingredient.model";
+import * as SLActions from "./shopping-list.actions";
+
+const initialState = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+};
+
+export function shoppingListReducer(
+  state = initialState,
+  action: SLActions.ShoppingListActions
+) {
+  switch (action.type) {
+    case SLActions.ADD_INGREDIENT:
+      return {
+        ...state,
+        ingredients: [...state.ingredients, action.payload],
+      };
+    case SLActions.ADD_INGREDIENTS:
+      return {
+        ...state,
+        ingredients: [...state.ingredients, ...action.payload],
+      };
+    default:
+      return state;
+  }
+}
+```
+
+Dispatch the Action
+
+```ts
+addIngredientsToShoppingList(ingredients: Ingredient[]) {
+  // this.shoppingListService.addIngredients(ingredients);
+  this.store.dispatch(new SLActions.AddIngredients(ingredients));
+}
+```
+
+<br><br>
+
+### **Preparing Update & Delete Actions** <span id="a2509"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+```ts
+// Add Update & Delete Actions
+export const UPDATE_INGREDIENT = "UPDATE_INGREDIENT";
+export const DELETE_INGREDIENT = "DELETE_INGREDIENT";
+
+export class UpdateIngredient implements Action {
+  readonly type = UPDATE_INGREDIENT;
+
+  constructor(public payload: { index: number; newIngredient: Ingredient }) {}
+}
+
+export class DeleteIngredient implements Action {
+  readonly type = DELETE_INGREDIENT;
+
+  constructor(public payload: number) {}
+}
+
+export type ShoppingListActions =
+  | AddIngredient
+  | AddIngredients
+  | UpdateIngredient
+  | DeleteIngredient;
+```
+
+<br><br>
+
+### **Updating & Deleting Ingredients** <span id="a2509"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+Add more Reducers:
+
+```ts
+case SLActions.UPDATE_INGREDIENT:
+  const ingredient = state.ingredients[action.payload.index];
+  const updatedIngredient = {
+    ...ingredient, // copy old ingredient
+    ...action.payload.ingredient, // overwrite the old ingredient
+  };
+  const updatedIngredients = [...state.ingredients];
+  // replace old element (copy) with [index] with the updatedIngredient (copy)
+  updatedIngredients[action.payload.index] = updatedIngredient;
+
+  return {
+    ...state,
+    ingredients: updatedIngredients,
+  };
+case SLActions.DELETE_INGREDIENT:
+  return {
+    ...state,
+    // filter() - run function on every element of an array
+    // filter() also provides an index
+    ingredients: state.ingredients.filter((ing, ingIndex) => {
+      // return true or false - depending on whether we want to keep an element or not
+      return ingIndex !== action.payload;
+    }),
+  };
+```
+
+Dispatch new Actions
+
+```ts
+// Update
+
+// this.shoppingListService.updateIngredient(this.editedItemIndex, newIngredient);
+this.store.dispatch(
+  new SLActions.UpdateIngredient({
+    index: this.editedItemIndex,
+    ingredient: newIngredient,
+  })
+);
+
+// Delete
+
+// this.shoppingListService.deleteIngredient(this.editedItemIndex);
+this.store.dispatch(new SLActions.DeleteIngredient(this.editedItemIndex));
+```
+
+<br><br>
+
+### **Expanding the State** <span id="a2510"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+```ts
+export interface State {
+  ingredients: Ingredient[];
+  editedIngredient: Ingredient;
+  editedIngredientIndex: number;
+}
+
+export interface AppState {
+  shoppingList: State;
+}
+
+const initialState: State = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+  editedIngredient: null,
+  editedIngredientIndex: -1,
+};
+```
+
+Now you import/inject the store like this:
+
+```ts
+// naming convention for importing the reducers
+import * as fromShoppingList from './store/shopping-list.reducer';
+
+// ...
+
+constructor(
+  private store: Store<fromShoppingList.AppState>
+) {}
+```
+
+<br><br>
+
+### **Managing More State via NgRx** <span id="a2511"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+Add New Actions
+
+```ts
+export const START_EDIT = "START_EDIT";
+export const STOP_EDIT = "STOP_EDIT";
+
+export class StartEdit implements Action {
+  readonly type = START_EDIT;
+
+  constructor(public payload: number) {}
+}
+
+export class StopEdit implements Action {
+  readonly type = STOP_EDIT;
+}
+
+export type ShoppingListActions =
+  | AddIngredient
+  | AddIngredients
+  | UpdateIngredient
+  | DeleteIngredient
+  | StartEdit
+  | StopEdit;
+```
+
+Configure new Reducer cases
+
+```ts
+case SLActions.START_EDIT:
+  return {
+    ...state,
+    editedIngredientIndex: action.payload,
+    editedIngredient: { ...state.ingredients[action.payload] },
+  };
+case SLActions.STOP_EDIT:
+  return {
+    ...state,
+    editedIngredient: null,
+    editedIngredientIndex: -1
+  };
+```
+
+Update edit method:
+
+```ts
+// this.shoppingListService.startedEditing.next(index);
+this.store.dispatch(new SLActions.StartEdit(index));
+```
+
+Update onClear method:
+
+```ts
+this.store.dispatch(new SLActions.StopEdit());
+```
+
+Use NgRx instead of Subject/Service:
+
+```ts
+ngOnInit(): void {
+  this.subscription = this.store
+    .select('shoppingList')
+    .subscribe((stateData) => {
+      if (stateData.editedIngredientIndex > -1) {
+        this.editMode = true;
+        this.editedItem = stateData.editedIngredient;
+        this.slForm.setValue({
+          name: this.editedItem.name,
+          amount: this.editedItem.amount,
+        });
+      } else {
+        this.editMode = false;
+      }
+    });
+}
+```
+
+<br><br>
+
+### **Removing Redundant Component State Management** <span id="a2512"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+actions.ts:
+
+```ts
+import { Action } from "@ngrx/store";
+import { Ingredient } from "../../shared/ingredient.model";
+
+export const ADD_INGREDIENT = "ADD_INGREDIENT";
+export const ADD_INGREDIENTS = "ADD_INGREDIENTS";
+export const UPDATE_INGREDIENT = "UPDATE_INGREDIENT";
+export const DELETE_INGREDIENT = "DELETE_INGREDIENT";
+export const START_EDIT = "START_EDIT";
+export const STOP_EDIT = "STOP_EDIT";
+
+export class AddIngredient implements Action {
+  readonly type = ADD_INGREDIENT;
+
+  constructor(public payload: Ingredient) {}
+}
+
+export class AddIngredients implements Action {
+  readonly type = ADD_INGREDIENTS;
+
+  constructor(public payload: Ingredient[]) {}
+}
+
+export class UpdateIngredient implements Action {
+  readonly type = UPDATE_INGREDIENT;
+
+  constructor(public payload: Ingredient) {}
+}
+
+export class DeleteIngredient implements Action {
+  readonly type = DELETE_INGREDIENT;
+}
+
+export class StartEdit implements Action {
+  readonly type = START_EDIT;
+
+  constructor(public payload: number) {}
+}
+
+export class StopEdit implements Action {
+  readonly type = STOP_EDIT;
+}
+
+export type ShoppingListActions =
+  | AddIngredient
+  | AddIngredients
+  | UpdateIngredient
+  | DeleteIngredient
+  | StartEdit
+  | StopEdit;
+```
+
+<br>
+
+reducer.ts:
+
+```ts
+import { Ingredient } from "src/app/shared/ingredient.model";
+import * as SLActions from "./shopping-list.actions";
+
+export interface State {
+  ingredients: Ingredient[];
+  editedIngredient: Ingredient;
+  editedIngredientIndex: number;
+}
+
+export interface AppState {
+  shoppingList: State;
+}
+
+const initialState: State = {
+  ingredients: [new Ingredient("Apples", 5), new Ingredient("Tomatoes", 10)],
+  editedIngredient: null,
+  editedIngredientIndex: -1,
+};
+
+export function shoppingListReducer(
+  state: State = initialState,
+  action: SLActions.ShoppingListActions
+) {
+  switch (action.type) {
+    case SLActions.ADD_INGREDIENT:
+      return {
+        ...state,
+        ingredients: [...state.ingredients, action.payload],
+      };
+    case SLActions.ADD_INGREDIENTS:
+      return {
+        ...state,
+        ingredients: [...state.ingredients, ...action.payload],
+      };
+    case SLActions.UPDATE_INGREDIENT:
+      const ingredient = state.ingredients[state.editedIngredientIndex];
+      const updatedIngredient = {
+        ...ingredient, // copy old ingredient
+        ...action.payload, // overwrite the old ingredient
+      };
+      const updatedIngredients = [...state.ingredients];
+      // replace old element (copy) with [index] with the updatedIngredient (copy)
+      updatedIngredients[state.editedIngredientIndex] = updatedIngredient;
+
+      return {
+        ...state,
+        ingredients: updatedIngredients,
+        editedIngredientIndex: -1,
+        editedIngredient: null,
+      };
+    case SLActions.DELETE_INGREDIENT:
+      return {
+        ...state,
+        // filter() - run function on every element of an array
+        // filter() also provides an index
+        ingredients: state.ingredients.filter((ing, ingIndex) => {
+          // return true or false - depending on whether we want to keep an element or not
+          return ingIndex !== state.editedIngredientIndex;
+        }),
+      };
+    case SLActions.START_EDIT:
+      return {
+        ...state,
+        editedIngredientIndex: action.payload,
+        editedIngredient: { ...state.ingredients[action.payload] },
+      };
+    case SLActions.STOP_EDIT:
+      return {
+        ...state,
+        editedIngredient: null,
+        editedIngredientIndex: -1,
+      };
+    default:
+      return state;
+  }
+}
+```
+
+recipe.service.ts
+
+```ts
+import { Injectable } from "@angular/core";
+import { Store } from "@ngrx/store";
+import { Subject } from "rxjs";
+import { Recipe } from "../recipes/recipe.model";
+import { Ingredient } from "../shared/ingredient.model";
+import { ShoppingListService } from "./shopping-list.service";
+import * as SLActions from "../shopping-list/store/shopping-list.actions";
+import * as fromShoppingList from "../shopping-list/store/shopping-list.reducer";
+
+@Injectable({
+  providedIn: "root",
+})
+export class RecipeService {
+  recipesChanged = new Subject<Recipe[]>();
+
+  private recipes: Recipe[] = [
+    new Recipe("...", "...", "...", [
+      new Ingredient("x", 0),
+      new Ingredient("y", 1),
+    ]),
+  ];
+
+  constructor(
+    private shoppingListService: ShoppingListService,
+    private store: Store<fromShoppingList.AppState>
+  ) {}
+
+  getRecipes() {
+    return this.recipes.slice();
+  }
+
+  getRecipe(id: number) {
+    return this.recipes[id];
+  }
+
+  addIngredientsToShoppingList(ingredients: Ingredient[]) {
+    // this.shoppingListService.addIngredients(ingredients);
+    this.store.dispatch(new SLActions.AddIngredients(ingredients));
+  }
+
+  addRecipe(recipe: Recipe) {
+    this.recipes.push(recipe);
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  updateRecipe(index: number, newRecipe: Recipe) {
+    this.recipes[index] = newRecipe;
+    this.recipesChanged.next(this.recipes.slice());
+  }
+
+  deleteRecipe(index: number) {
+    this.recipes.splice(index, 1);
+    this.recipesChanged.next(this.recipes.slice());
+  }
+}
+```
+
+<br><br>
+
+### **First Summary** <span id="a2513"></span><a href="#top25">&#8593;</a>
+
+<br>
+
+We added NgRx to our application with `npm i --save @ngrx/store`,
+
+and by including the StoreModule.forRoot(map):
+
+```ts
+imports: [StoreModule.forRoot({ identifier: reducer })];
+```
+
+forRoot() needs an object - a map that tells NgRx which reducers we have in our app.
+
+<br>
+
+The reducer is a function that accepts 2 args: (current) state & action.
+
+<br>
+
+Reducer will execute whenever a new action is received.
+
+<br>
+
+In the Reducer we use switch statement, where we check the `action.type`, and depending on the type we return a new (copied) state.
+
+<br>
+
+We also added actions file where we define unique constant identifiers, then the action itself (class).
+
+Each action needs to have a type property where we store identifier. In addition we might also have a payload (data) which is a property that can be set to attach data to that action.
+
+<br><br>
+
+<hr>
+
+<br><br>
 
 ## **Section 29: A Basic Introduction to Unit Testing** <a href="#nav">&#8593;</a> <span id="top29"></span>
 
