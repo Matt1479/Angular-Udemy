@@ -42,6 +42,8 @@
 
 ### <a href="#top18">**Section-18: Making Http Requests**</a>
 
+### <a href="#top19">**Section-19: Course Project - Http**</a>
+
 ### <a href="#">**Section-XX: ...**</a>
 
 ### <a href="#top25">**Section-25: NgRx**</a>
@@ -8019,7 +8021,220 @@ https://angular.io/guide/http
 
 <br><br>
 
-### ...
+## **Section 19: Course Project - Http** <a href="#nav">&#8593;</a> <span id="top19"></span>
+
+<br><br>
+
+#### Setup the Firebase:
+
+- create a new project
+- create realtime database
+
+<br>
+
+#### Http Requests:
+
+<br>
+
+Make sure you inject HttpClient:
+
+```ts
+constructor(private http: HttpClient) {}
+```
+
+<br>
+
+#### Storing Data:
+
+<br>
+
+- `http.put()` - stores & overwrites all objects sent through that method
+
+```ts
+storeRecipes() {
+  const recipes = this.recipeService.getRecipes();
+
+  this.http
+    .put<Recipe[]>(
+      'https://ng-tutorial-project-abb7e-default-rtdb.europe-west1.firebasedatabase.app/recipes.json',
+      recipes
+    )
+    .subscribe((response) => {
+      console.log(response);
+    });
+}
+```
+
+<br>
+
+#### Fetching Data:
+
+<br>
+
+- `http.get()`
+
+```ts
+fetchRecipes() {
+  this.http
+    .get<Recipe[]>(
+      'https://ng-tutorial-project-abb7e-default-rtdb.europe-west1.firebasedatabase.app/recipes.json'
+    )
+    .subscribe((response) => {
+      this.recipeService.setRecipes(response);
+    });
+}
+```
+
+<br>
+
+#### Transforing Response Data:
+
+<br>
+
+```ts
+fetchRecipes() {
+  this.http
+    .get<Recipe[]>(
+      'https://ng-tutorial-project-abb7e-default-rtdb.europe-west1.firebasedatabase.app/recipes.json'
+    )
+    .pipe(
+      // rxjs operator
+      map((recipe) => {
+        // JS map method (not rxjs)
+        // map() is called on every element in an array
+        // to transform elements in an array
+        return recipe.map((recipe) => {
+          // return transformed array
+          return {
+            ...recipe,
+            ingredients: recipe.ingredients ? recipe.ingredients : [],
+          };
+        });
+      })
+    )
+    .subscribe((response) => {
+      this.recipeService.setRecipes(response);
+    });
+}
+```
+
+<br>
+
+#### Resolving Data Before Loading:
+
+<br>
+
+- use route guards
+- use (route) resolver
+
+<br>
+
+#### Using Resolver to Transform Data:
+
+<br>
+
+Modify the fetchRecipes() method:
+
+```ts
+fetchRecipes() {
+  // return this call
+  return this.http
+    .get<Recipe[]>(
+      'https://ng-tutorial-project-abb7e-default-rtdb.europe-west1.firebasedatabase.app/recipes.json'
+    )
+    .pipe(
+      // rxjs operator
+      map((recipe) => {
+        // JS map method (not rxjs)
+        // map() is called on every element in an array
+        // to transform elements in an array
+        return recipe.map((recipe) => {
+          // return transformed array
+          return {
+            ...recipe,
+            ingredients: recipe.ingredients ? recipe.ingredients : [],
+          };
+        });
+      }),
+      // set the recipes here without subscribing
+      // tap() - allows us to execute some code without altering the data
+      // that is taken care by an observable
+      tap((recipes) => {
+        this.recipeService.setRecipes(recipes);
+      })
+    );
+}
+```
+
+<br>
+
+Subscribe to it in a component:
+
+```ts
+onFetchData() {
+  this.dataStorageService.fetchRecipes().subscribe();
+}
+```
+
+<br>
+
+#### Create Resolver - load data before page is loaded:
+
+<br>
+
+```ts
+import { Injectable } from "@angular/core";
+import {
+  ActivatedRouteSnapshot,
+  Resolve,
+  RouterStateSnapshot,
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { Recipe } from "../recipes/recipe.model";
+import { DataStorageService } from "../shared/data-storage.service";
+import { RecipeService } from "./recipe.service";
+
+@Injectable({
+  providedIn: "root",
+})
+export class RecipesResolverService implements Resolve<Recipe[]> {
+  constructor(
+    private dataStorageService: DataStorageService,
+    private recipesService: RecipeService
+  ) {}
+
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Recipe[] | Observable<Recipe[]> {
+    const recipes = this.recipesService.getRecipes();
+
+    // check if we got recipes, fetch new recipes if we don't
+    if (recipes.length === 0) {
+      return this.dataStorageService.fetchRecipes();
+    } else {
+      // otherwise return recipes since we have those
+      return recipes;
+    }
+  }
+}
+```
+
+<br>
+
+#### Use Resolver in AppRoutingModule:
+
+<br>
+
+```ts
+// (child route)
+// add the Resolver to any route that will use it:
+{ path: ':id', component: RecipeDetailComponent, resolve: [RecipesResolverService] },
+```
+
+<br>
+
+This is really helpful since we're not loading non existent data.
 
 <br><br>
 
@@ -8111,7 +8326,7 @@ Redux is a state management pattern, it's also a library that helps you implemen
 
 <img src="./img/redux-pattern.png" alt="redux">
 
-Store - Single Source of Truth - Holds & Manages the Application State, think of it as a large JavaScript object that contains all the data of the different parts of your application needs.
+Store - Single Source of Truth - Holds & Manages the Application State, think of it as a large JavaScript object that contains all the data of the different parts of your application.
 
 <br>
 
