@@ -8242,6 +8242,51 @@ This is really helpful since we're not loading non existent data.
 
 <br><br>
 
+## **Section 20: Authentication & Route Protection in Angular** <a href="#nav">&#8593;</a> <span id="top20"></span>
+
+<br><br>
+
+1. <a href="#a2000">How Authentication Works</a>
+
+<br><br>
+
+### **How Authentication Works** <span id="a2000"></span><a href="#top20">&#8593;</a>
+
+<br>
+
+Web Application:
+
+- Client
+  - User logs in - auth data is sent to the server
+- Server
+  - server validates the auth data
+  - SPA Applications use RESTful API - which is not using a session
+  - if the auth data is valid, the server will send a token to the client
+
+#### JSON Web Token - encoded string that contains a lot of metadata
+
+- The Token is generated on the server with a certain algorithm and secret
+- The Token is stored in local memory
+- Stored Token is attached to every request, which is sent to the server and then is authenticated
+
+<br>
+
+<img src="./img/how-authentication-works.png" alt="">
+
+<br><br>
+
+### **Adding the Auth Page** <span id="a2001"></span><a href="#top20">&#8593;</a>
+
+<br>
+
+...
+
+<br><br>
+
+<hr>
+
+<br><br>
+
 ## **Section 25: NgRx** <a href="#nav">&#8593;</a> <span id="top25"></span>
 
 <br><br>

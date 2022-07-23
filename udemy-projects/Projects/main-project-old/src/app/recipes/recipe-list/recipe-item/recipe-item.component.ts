@@ -8,8 +8,8 @@ import { Recipe } from '../../recipe.model';
 })
 export class RecipeItemComponent implements OnInit {
   // exposing it with @Input() to bind it, to later get data from outside
-  @Input('recipeItem') recipe!: Recipe;
-  @Input() index!: number;
+  @Input('recipeItem') recipe: Recipe;
+  @Input() index: number;
 
   constructor() {}
 

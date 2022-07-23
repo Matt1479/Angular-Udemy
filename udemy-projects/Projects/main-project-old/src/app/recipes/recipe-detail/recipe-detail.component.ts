@@ -9,8 +9,8 @@ import { Recipe } from '../recipe.model';
   styleUrls: ['./recipe-detail.component.css'],
 })
 export class RecipeDetailComponent implements OnInit {
-  recipe!: Recipe;
-  @Input() id!: number;
+  recipe: Recipe;
+  @Input() id: number;
 
   constructor(
     private recipeService: RecipeService,

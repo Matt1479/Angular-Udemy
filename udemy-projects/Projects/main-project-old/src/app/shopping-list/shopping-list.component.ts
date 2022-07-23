@@ -10,7 +10,7 @@ import { ShoppingListService } from '../utils/shopping-list.service';
 })
 export class ShoppingListComponent implements OnInit, OnDestroy {
   // ingredients: Array<Ingredient> = [];
-  ingredients!: Ingredient[];
+  ingredients: Ingredient[];
   private inChangeSub!: Subscription;
 
   constructor(private shoppingListService: ShoppingListService) {}

@@ -10,9 +10,9 @@ import { Recipe } from '../recipe.model';
   styleUrls: ['./recipe-edit.component.css'],
 })
 export class RecipeEditComponent implements OnInit {
-  id!: number;
+  id: number;
   editMode = false;
-  recipeForm!: FormGroup;
+  recipeForm: FormGroup;
 
   constructor(
     private activatedRoute: ActivatedRoute,
